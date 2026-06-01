@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#F4EEE4">
+<title>Kelime Çalışma · 311</title>
+<style>
+:root{
+  --paper:#F4EEE4;
+  --paper-2:#EFE7DA;
+  --surface:#FFFDF9;
+  --ink:#2B2520;
+  --ink-soft:#5C5247;
+  --muted:#9A8E7E;
+  --line:#E2D8C8;
+  --coral:#D55B36;
+  --coral-soft:#FBE7DE;
+  --teal:#2E7D6F;
+  --teal-soft:#DCEDE9;
+  --gold:#C99A2E;
+  --green:#3F8F5B;
+  --green-soft:#DDEEE1;
+  --red:#C2452F;
+  --red-soft:#F7E0DB;
+  --shadow:0 1px 2px rgba(43,37,32,.05),0 8px 24px rgba(43,37,32,.07);
+  --shadow-lg:0 12px 40px rgba(43,37,32,.16);
+  --r:18px;
+  --serif:ui-serif,"New York",Georgia,"Times New Roman",serif;
+  --round:ui-rounded,"SF Pro Rounded",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --nav-h:calc(64px + env(safe-area-inset-bottom));
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%}
+body{
+  font-family:var(--round);
+  background:var(--paper);
+  color:var(--ink);
+  -webkit-font-smoothing:antialiased;
+  overscroll-behavior-y:none;
+  background-image:radial-gradient(circle at 1px 1px, rgba(43,37,32,.04) 1px, transparent 0);
+  background-size:22px 22px;
+}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input{font-family:inherit}
+
+#app{max-width:560px;margin:0 auto;min-height:100%;position:relative;padding-bottom:var(--nav-h)}
+
+/* Header */
+.topbar{
+  position:sticky;top:0;z-index:30;
+  padding:calc(env(safe-area-inset-top) + 14px) 18px 12px;
+  background:linear-gradient(180deg,var(--paper) 70%, rgba(244,238,228,0));
+}
+.topbar h1{margin:0;font-size:15px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.topbar .big{font-family:var(--serif);font-size:26px;font-weight:600;letter-spacing:-.01em;color:var(--ink);margin-top:2px;display:flex;align-items:baseline;gap:9px}
+.topbar .big .count{font-family:var(--round);font-size:13px;color:var(--coral);background:var(--coral-soft);padding:3px 9px;border-radius:999px;font-weight:600;letter-spacing:0;text-transform:none}
+
+.view{display:none;padding:6px 18px 26px;animation:fade .35s ease}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* Bottom nav */
+nav.tabs{
+  position:fixed;left:0;right:0;bottom:0;z-index:40;
+  display:flex;max-width:560px;margin:0 auto;
+  background:rgba(255,253,249,.86);
+  backdrop-filter:saturate(180%) blur(18px);
+  -webkit-backdrop-filter:saturate(180%) blur(18px);
+  border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+nav.tabs button{flex:1;padding:9px 4px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--muted);font-size:11px;font-weight:600;transition:color .2s}
+nav.tabs button .ic{width:25px;height:25px;display:block}
+nav.tabs button.on{color:var(--coral)}
+nav.tabs button:active{transform:scale(.92)}
+nav.tabs button.tab-mistakes{position:relative}
+.mk-tabcount{position:absolute;top:3px;left:calc(50% + 7px);min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:var(--coral);color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1}
+
+/* ---------- LIST ---------- */
+.search{position:relative;margin:4px 0 14px}
+.search input{
+  width:100%;padding:14px 16px 14px 44px;font-size:16px;border-radius:14px;
+  border:1.5px solid var(--line);background:var(--surface);color:var(--ink);outline:none;
+  box-shadow:var(--shadow);transition:border-color .2s
+}
+.search input:focus{border-color:var(--coral)}
+.search .mag{position:absolute;left:15px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--muted)}
+.search .clr{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:50%;display:none;align-items:center;justify-content:center;color:var(--muted);background:var(--paper-2)}
+.search .clr.show{display:flex}
+.list-meta{font-size:12.5px;color:var(--muted);margin:0 4px 10px;font-weight:600}
+.wcard{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:14px 15px;margin-bottom:9px;box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:12px;transition:transform .12s
+}
+.wcard:active{transform:scale(.985)}
+.wcard .txt{flex:1;min-width:0}
+.wcard .w{font-family:var(--serif);font-size:18.5px;font-weight:600;color:var(--ink);line-height:1.15}
+.wcard .m{font-size:13.5px;color:var(--ink-soft);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wcard .chev{color:var(--muted);width:18px;height:18px;flex:none}
+.tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;padding:2px 7px;border-radius:6px;background:var(--teal-soft);color:var(--teal);vertical-align:middle;margin-left:6px}
+.empty{text-align:center;color:var(--muted);padding:50px 20px;font-size:15px}
+
+/* Detail sheet */
+.sheet-bg{position:fixed;inset:0;background:rgba(43,37,32,.32);z-index:50;opacity:0;pointer-events:none;transition:opacity .28s;backdrop-filter:blur(2px)}
+.sheet-bg.open{opacity:1;pointer-events:auto}
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;z-index:51;max-width:560px;margin:0 auto;
+  background:var(--surface);border-radius:26px 26px 0 0;
+  padding:10px 22px calc(30px + env(safe-area-inset-bottom));
+  transform:translateY(100%);transition:transform .34s cubic-bezier(.22,1,.36,1);
+  box-shadow:var(--shadow-lg);max-height:88vh;overflow-y:auto;-webkit-overflow-scrolling:touch
+}
+.sheet.open{transform:translateY(0)}
+.grab{width:38px;height:5px;border-radius:3px;background:var(--line);margin:6px auto 16px}
+.sheet .dw{font-family:var(--serif);font-size:32px;font-weight:600;line-height:1.1;letter-spacing:-.01em}
+.sheet .dm{font-size:17px;color:var(--coral);font-weight:600;margin-top:6px}
+.field{margin-top:20px}
+.field .lab{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px}
+.field .val{margin-top:7px;font-size:16px;line-height:1.5;color:var(--ink)}
+.field .val.coll{font-style:normal;color:var(--teal);font-weight:600}
+.field .val.ex{color:var(--ink-soft);background:var(--paper-2);padding:13px 15px;border-radius:13px;border-left:3px solid var(--gold)}
+.field .val .hl{background:linear-gradient(transparent 55%, var(--coral-soft) 55%);font-weight:600;color:var(--ink)}
+
+/* ---------- FLASHCARDS ---------- */
+.fc-wrap{display:flex;flex-direction:column;align-items:center;padding-top:6px}
+.fc-bar{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.fc-prog{flex:1;height:7px;background:var(--paper-2);border-radius:4px;overflow:hidden}
+.fc-prog i{display:block;height:100%;background:var(--coral);border-radius:4px;transition:width .3s;width:0}
+.fc-num{font-size:13px;font-weight:700;color:var(--ink-soft);min-width:74px;text-align:right}
+.pill-btn{font-size:12.5px;font-weight:700;padding:7px 13px;border-radius:999px;background:var(--surface);border:1.5px solid var(--line);color:var(--ink-soft);display:inline-flex;align-items:center;gap:5px;box-shadow:var(--shadow)}
+.pill-btn:active{transform:scale(.94)}
+.fc-toolbar{display:flex;gap:8px;width:100%;margin-bottom:14px}
+.fc-toolbar .pill-btn{flex:1;justify-content:center}
+.fc-toolbar .pill-btn.on{background:var(--coral);border-color:var(--coral);color:#fff}
+
+.card{
+  width:100%;aspect-ratio:3/4;max-height:62vh;perspective:1600px;margin-bottom:18px;cursor:pointer
+}
+.card-inner{position:relative;width:100%;height:100%;transition:transform .55s cubic-bezier(.22,1,.36,1);transform-style:preserve-3d}
+.card.flipped .card-inner{transform:rotateY(180deg)}
+.face{
+  position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+  border-radius:26px;background:var(--surface);border:1px solid var(--line);box-shadow:var(--shadow-lg);
+  display:flex;flex-direction:column;justify-content:center;padding:26px;overflow:hidden
+}
+.face::before{content:"";position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--coral),var(--gold))}
+.face .crn{position:absolute;top:18px;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.face .crn.l{left:22px}.face .crn.r{right:22px}
+.front{align-items:center;text-align:center}
+.front .word{font-family:var(--serif);font-size:38px;font-weight:600;line-height:1.1;letter-spacing:-.01em}
+.front .hint{margin-top:auto;font-size:12.5px;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:6px}
+.back{transform:rotateY(180deg);justify-content:flex-start;overflow-y:auto}
+.back .bw{font-family:var(--serif);font-size:22px;font-weight:600;margin-top:22px}
+.back .bm{font-size:19px;color:var(--coral);font-weight:600;margin-top:4px}
+.back .bsec{margin-top:16px}
+.back .bsec .l{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.back .bsec .v{font-size:15px;margin-top:5px;line-height:1.45}
+.back .bsec .v.coll{color:var(--teal);font-weight:600}
+.back .bsec .v.ex{color:var(--ink-soft);font-style:italic}
+.back .bsec .v.ex .hl{font-style:normal;font-weight:600;color:var(--ink);background:linear-gradient(transparent 55%, var(--coral-soft) 55%)}
+.fc-actions{display:flex;gap:12px;width:100%}
+.fc-actions button{flex:1;padding:16px;border-radius:16px;font-size:15px;font-weight:700;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;gap:7px;transition:transform .12s}
+.fc-actions button:active{transform:scale(.96)}
+.btn-no{background:var(--surface);border:1.5px solid var(--line);color:var(--ink-soft)}
+.btn-yes{background:var(--green);color:#fff}
+.btn-yes.known{background:var(--green-soft);color:var(--green)}
+
+/* ---------- QUIZ ---------- */
+.q-setup,.q-done{text-align:center;padding-top:8px}
+.q-head{font-family:var(--serif);font-size:24px;font-weight:600;margin-bottom:6px}
+.q-sub{color:var(--ink-soft);font-size:14.5px;margin-bottom:22px;line-height:1.5}
+.seg{display:flex;background:var(--paper-2);border-radius:14px;padding:4px;margin-bottom:14px}
+.seg button{flex:1;padding:11px;border-radius:11px;font-size:14px;font-weight:700;color:var(--ink-soft);transition:.2s}
+.seg button.on{background:var(--surface);color:var(--coral);box-shadow:var(--shadow)}
+.big-btn{width:100%;padding:17px;border-radius:16px;background:var(--coral);color:#fff;font-size:16px;font-weight:700;box-shadow:var(--shadow);margin-top:6px;transition:transform .12s}
+.big-btn:active{transform:scale(.97)}
+.big-btn.ghost{background:var(--surface);border:1.5px solid var(--line);color:var(--ink)}
+.q-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.q-count{font-size:13px;font-weight:700;color:var(--muted)}
+.q-score{font-size:13px;font-weight:700;color:var(--green)}
+.q-prog{height:7px;background:var(--paper-2);border-radius:4px;overflow:hidden;margin-bottom:24px}
+.q-prog i{display:block;height:100%;background:var(--coral);transition:width .3s}
+.q-prompt{text-align:center;margin-bottom:8px;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.q-word{font-family:var(--serif);text-align:center;font-size:34px;font-weight:600;line-height:1.15;margin-bottom:28px;color:var(--ink)}
+.q-opts{display:flex;flex-direction:column;gap:11px}
+.q-opt{
+  padding:16px 17px;border-radius:15px;background:var(--surface);border:1.5px solid var(--line);
+  text-align:left;font-size:16px;font-weight:600;color:var(--ink);box-shadow:var(--shadow);transition:.18s;line-height:1.35
+}
+.q-opt:active{transform:scale(.98)}
+.q-opt.correct{background:var(--green-soft);border-color:var(--green);color:var(--green)}
+.q-opt.wrong{background:var(--red-soft);border-color:var(--red);color:var(--red)}
+.q-opt.dim{opacity:.5}
+.q-next{margin-top:18px}
+.scorebig{font-family:var(--serif);font-size:60px;font-weight:600;color:var(--coral);line-height:1}
+.scoremsg{font-size:16px;color:var(--ink-soft);margin:10px 0 26px;font-weight:600}
+
+/* ---------- MATCH ---------- */
+.m-setup{text-align:center;padding-top:8px}
+.m-stat{display:flex;justify-content:space-between;margin-bottom:16px;font-size:13px;font-weight:700;color:var(--ink-soft)}
+.m-cols{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.m-col{display:flex;flex-direction:column;gap:10px}
+.m-item{
+  padding:15px 12px;border-radius:14px;background:var(--surface);border:1.5px solid var(--line);
+  font-size:15px;font-weight:600;text-align:center;box-shadow:var(--shadow);transition:.16s;min-height:58px;
+  display:flex;align-items:center;justify-content:center;line-height:1.25
+}
+.m-item.en{font-family:var(--serif);font-size:16.5px}
+.m-item:active{transform:scale(.96)}
+.m-item.sel{background:var(--coral);border-color:var(--coral);color:#fff}
+.m-item.done{background:var(--green-soft);border-color:var(--green-soft);color:var(--green);opacity:.55;pointer-events:none}
+.m-item.bad{background:var(--red-soft);border-color:var(--red);color:var(--red);animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+
+/* ---------- MISTAKES ---------- */
+.mk-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 4px 14px}
+.mk-head .t{font-family:var(--serif);font-size:19px;font-weight:600;color:var(--ink)}
+.mk-head .t small{display:block;font-family:var(--round);font-size:12px;color:var(--muted);font-weight:600;margin-top:2px}
+.mk-clear{font-size:12.5px;font-weight:700;color:var(--red);background:var(--red-soft);padding:8px 13px;border-radius:999px;transition:transform .12s;flex:none}
+.mk-clear:active{transform:scale(.95)}
+.mk-badge{flex:none;min-width:34px;height:30px;padding:0 9px;border-radius:999px;background:var(--coral-soft);color:var(--coral);font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center}
+.mk-mode{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.03em;padding:2px 8px;border-radius:6px;background:var(--paper-2);color:var(--muted);margin-top:5px}
+
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:60}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <h1 id="bar-title">Kelime Çalışma</h1>
+    <div class="big"><span id="bar-sub">Liste</span><span class="count" id="bar-count">311 kelime</span></div>
+  </div>
+
+  <!-- LIST -->
+  <section class="view active" id="v-list">
+    <div class="search">
+      <svg class="mag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+      <input id="q" type="search" inputmode="search" autocomplete="off" autocorrect="off" placeholder="Kelime, anlam, örnek ara…">
+      <button class="clr" id="clr" aria-label="Temizle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" width="15" height="15"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="list-meta" id="list-meta"></div>
+    <div id="list"></div>
+  </section>
+
+  <!-- FLASHCARDS -->
+  <section class="view" id="v-cards">
+    <div class="fc-wrap">
+      <div class="fc-toolbar">
+        <button class="pill-btn" id="fc-shuffle"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>Karıştır</button>
+        <button class="pill-btn" id="fc-onlyunknown">Sadece bilinmeyen</button>
+        <button class="pill-btn" id="fc-reset">Sıfırla</button>
+      </div>
+      <div class="fc-bar">
+        <div class="fc-prog"><i id="fc-prog"></i></div>
+        <div class="fc-num" id="fc-num">1 / 311</div>
+      </div>
+      <div class="card" id="card">
+        <div class="card-inner">
+          <div class="face front">
+            <span class="crn l">İngilizce</span>
+            <span class="crn r" id="fc-knownbadge"></span>
+            <div class="word" id="fc-word">—</div>
+            <div class="hint"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0"/><path d="M12 8v8M8 12h8"/></svg>Çevirmek için dokun</div>
+          </div>
+          <div class="face back">
+            <span class="crn l">Türkçe</span>
+            <div class="bw" id="fc-bword"></div>
+            <div class="bm" id="fc-bmean"></div>
+            <div class="bsec" id="fc-bcoll-w"><div class="l">Collocation</div><div class="v coll" id="fc-bcoll"></div></div>
+            <div class="bsec"><div class="l">Örnek Cümle</div><div class="v ex" id="fc-bex"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="fc-actions">
+        <button class="btn-no" id="fc-prev"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M15 18l-6-6 6-6"/></svg>Önceki</button>
+        <button class="btn-yes" id="fc-know">Biliyorum</button>
+        <button class="btn-no" id="fc-next">Sonraki<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6"/></svg></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- QUIZ -->
+  <section class="view" id="v-quiz">
+    <div id="quiz-root"></div>
+  </section>
+
+  <!-- MATCH -->
+  <section class="view" id="v-match">
+    <div id="match-root"></div>
+  </section>
+
+  <!-- MISTAKES -->
+  <section class="view" id="v-mistakes">
+    <div id="mistakes-root"></div>
+  </section>
+</div>
+
+<!-- Detail sheet -->
+<div class="sheet-bg" id="sheet-bg"></div>
+<div class="sheet" id="sheet">
+  <div class="grab"></div>
+  <div class="dw" id="d-word"></div>
+  <div class="dm" id="d-mean"></div>
+  <div class="field" id="d-coll-f"><div class="lab"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 12h8M12 8v8"/><rect x="3" y="3" width="18" height="18" rx="4"/></svg>Collocation</div><div class="val coll" id="d-coll"></div></div>
+  <div class="field" id="d-theme-f"><div class="lab">Tema</div><div class="val" id="d-theme"></div></div>
+  <div class="field"><div class="lab"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Örnek Cümle</div><div class="val ex" id="d-ex"></div></div>
+</div>
+
+<nav class="tabs">
+  <button data-tab="list" class="on"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M8 6h12M8 12h12M8 18h12M3.5 6h.01M3.5 12h.01M3.5 18h.01"/></svg>Liste</button>
+  <button data-tab="cards"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="5" width="14" height="16" rx="2.5"/><path d="M7 5V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v13a2 2 0 0 1-2 2h-1"/></svg>Kartlar</button>
+  <button data-tab="quiz"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9.5 9a2.5 2.5 0 1 1 3.6 2.2c-.9.5-1.6 1.2-1.6 2.3"/><circle cx="11.5" cy="17" r=".6" fill="currentColor"/><circle cx="12" cy="12" r="9.5"/></svg>Quiz</button>
+  <button data-tab="match"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="7" height="7" rx="2"/><rect x="14" y="4" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/><path d="M10 7.5h4M7.5 11v3M16.5 11v3"/></svg>Eşleştir</button>
+  <button data-tab="mistakes" class="tab-mistakes"><span class="mk-tabcount" id="mk-tabcount" style="display:none"></span><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3.2 2.6 19.5a1 1 0 0 0 .87 1.5h17.06a1 1 0 0 0 .87-1.5L12 3.2z"/><path d="M12 9.5v4.5"/><circle cx="12" cy="17.4" r=".7" fill="currentColor" stroke="none"/></svg>Hatalar</button>
+</nav>
+
+<script>
+/* ===== DATA ===== */
+const WORDS = [{"w":"Emerge","m":"ortaya çıkmak","c":"emerge from · emerge as · emerge in response to · new trends emerge","e":"New theories about state formation emerged throughout the 20th century.","t":"Fiil"},{"w":"Contribute","m":"katkıda bulunmak","c":"contribute to · contribute significantly · make a contribution · contribute to growth","e":"Social welfare programs contributed significantly to population growth after World War II.","t":"Fiil"},{"w":"Establish","m":"kurmak, tesis etmek","c":"establish authority · establish a relationship · establish oneself as · firmly established","e":"India established itself as an independent republic by 1950.","t":"Fiil"},{"w":"Acquire","m":"edinmek, kazanmak","c":"acquire skills · acquire knowledge · acquire resources · acquire mana","e":"In Melanesia, people believed they could acquire mana by working hard.","t":"Fiil"},{"w":"Maintain","m":"sürdürmek, korumak","c":"maintain control · maintain order · maintain a relationship · maintain standards","e":"Companies aim to maintain strong control over service quality across all retailers.","t":"Fiil"},{"w":"Sustain","m":"ayakta tutmak, sürdürmek","c":"sustain growth · sustainable development · cannot sustain · sustain a relationship","e":"The physically restricted area could not sustain the dense population living there.","t":"Fiil"},{"w":"Demonstrate","m":"göstermek, kanıtlamak","c":"clearly demonstrate · demonstrate a point · demonstrate that · demonstrate skills","e":"Levi-Strauss demonstrated that apparently different myths can be transformations of each other.","t":"Fiil"},{"w":"Indicate","m":"göstermek, belirtmek","c":"research indicates · results indicate · strongly indicate · indicate that","e":"Studies indicate that cooperative children not only do better in school but also display good relations with teachers.","t":"Fiil"},{"w":"Advocate","m":"savunmak, desteklemek / savunucu","c":"advocate for · strongly advocate · advocate change · advocacy group","e":"Many European governments actively advocate domestic media productions to preserve cultural diversity.","t":"Fiil"},{"w":"Implement","m":"uygulamak","c":"implement a policy · implement changes · successfully implement · implement solutions","e":"If a community is well organized, it will be able to implement solutions to its own problems.","t":"Fiil"},{"w":"Reinforce","m":"pekiştirmek, güçlendirmek","c":"reinforce a belief · reinforce authority · reinforce stereotypes · mutually reinforce","e":"Filter bubbles cause users to be exposed mainly to content that reinforces their existing beliefs.","t":"Fiil"},{"w":"Distinguish","m":"ayırt etmek","c":"distinguish between · clearly distinguish · draw a distinction · make a distinction","e":"Bettelheim draws a useful distinction between tragic myths and hopeful folktales.","t":"Fiil"},{"w":"Interpret","m":"yorumlamak","c":"interpret events · interpret data · misinterpret · interpret information","e":"The media shapes how people interpret events and form their public opinion.","t":"Fiil"},{"w":"Perceive","m":"algılamak, görmek","c":"be perceived as · perceive a threat · widely perceived · perceive the world","e":"Europeans had previously perceived domestic items like washing machines as luxuries, not necessities.","t":"Fiil"},{"w":"Influence","m":"etkilemek / etki","c":"have an influence on · exert influence · under the influence of · influence behavior","e":"Colonial independence movements directly influenced Afro-American uprisings in the United States.","t":"Fiil"},{"w":"Accomplish","m":"başarmak, gerçekleştirmek","c":"accomplish a goal · accomplish a task · in order to accomplish · accomplish aims","e":"Magic refers to supernatural techniques that are designed to accomplish specific aims.","t":"Fiil"},{"w":"Undergo","m":"geçirmek, uğramak","c":"undergo a process · undergo training · undergo changes · undergo transformation","e":"Commoners who came into contact with the chief's mana were required to undergo a process of purification.","t":"Fiil"},{"w":"Adopt","m":"benimsemek, kabul etmek","c":"adopt an approach · adopt a strategy · widely adopted · adopt a policy","e":"Distributors may also adopt the dynamic system, where decisions are guided by real-time sales data.","t":"Fiil"},{"w":"Evaluate","m":"değerlendirmek","c":"evaluate performance · evaluate evidence · critically evaluate · evaluate consequences","e":"Children gradually learn to evaluate the consequences of their own actions within friendships.","t":"Fiil"},{"w":"Facilitate","m":"kolaylaştırmak","c":"facilitate communication · facilitate learning · facilitate access · facilitate production","e":"AI technologies have facilitated the production of misleading videos known as deep fakes.","t":"Fiil"},{"w":"Coordinate","m":"koordine etmek","c":"coordinate activities · coordinate resources · coordinate efforts · require coordination","e":"An administrative unit was needed to coordinate the manpower required for large irrigation projects.","t":"Fiil"},{"w":"Resolve","m":"çözmek","c":"resolve a conflict · resolve a crisis · conflict resolution · successfully resolve","e":"Individuals must resolve the conflict of each developmental stage before moving on to the next.","t":"Fiil"},{"w":"Identify","m":"tanımlamak, belirlemek","c":"identify a problem · identify factors · clearly identify · identify with","e":"Robert Garner identifies a combination of factors that lead to state formation in an area.","t":"Fiil"},{"w":"Assess","m":"değerlendirmek, ölçmek","c":"assess the situation · carry out an assessment · assess risk · assess reactions","e":"Edward Jones set up an experiment in which he assessed the reactions of people to praise.","t":"Fiil"},{"w":"Derive","m":"türetmek, elde etmek","c":"derive pleasure from · derive from · derive meaning · derive benefit","e":"Tyler derived the word \"animism\" from the Latin word \"anima\", meaning soul.","t":"Fiil"},{"w":"Reflect","m":"yansıtmak, göstermek","c":"reflect changes · reflect reality · deeply reflect · be a reflection of","e":"These patterns reflect changes in national conditions and the broader political climate.","t":"Fiil"},{"w":"Promote","m":"teşvik etmek, desteklemek","c":"promote equality · promote development · promote awareness · promote growth","e":"Social welfare programs encouraged parents to have children and promoted population growth.","t":"Fiil"},{"w":"Restrict","m":"kısıtlamak","c":"restrict access · impose restrictions · be restricted to · social restriction","e":"Social restriction occurs when a neighboring community blocks access to resources.","t":"Fiil"},{"w":"Transform","m":"dönüştürmek","c":"transform society · undergo a transformation · radically transform · be transformed","e":"Digital technology has fundamentally transformed media production and distribution.","t":"Fiil"},{"w":"Determine","m":"belirlemek","c":"determine the outcome · largely determine · determine factors · be determined by","e":"Whether children can develop satisfactory peer relations is determined by early family interactions.","t":"Fiil"},{"w":"Achieve","m":"başarmak, elde etmek","c":"achieve a goal · achieve success · achieve balance · achieve results","e":"Commercial media companies must achieve two goals simultaneously: attract audiences and advertisers.","t":"Fiil"},{"w":"Engage","m":"meşgul olmak, dahil olmak","c":"engage in · engage with · be engaged in · actively engage","e":"Boys tend to engage in direct physical aggression, whereas girls often practice relational aggression.","t":"Fiil"},{"w":"Generate","m":"üretmek, oluşturmak","c":"generate income · generate interest · generate conflict · generate demand","e":"Influencers collaborate with brands and generate income through digital content production.","t":"Fiil"},{"w":"Assert","m":"ileri sürmek, iddia etmek","c":"assert that · assert authority · assertive behavior · boldly assert","e":"Darwin asserted that the survival of any species depends on its capacity for reproductive success.","t":"Fiil"},{"w":"Eliminate","m":"ortadan kaldırmak","c":"eliminate a problem · eliminate barriers · completely eliminate · eliminate risks","e":"Knowledge and rational thinking cannot fully eliminate accidents or foresee unexpected natural events.","t":"Fiil"},{"w":"Dominate","m":"egemen olmak, hâkim olmak","c":"dominate the market · be dominated by · dominant role · clearly dominate","e":"Western Europe after World War II was dominated by the United States in terms of international power.","t":"Fiil"},{"w":"Trigger","m":"tetiklemek","c":"trigger a response · trigger a conflict · trigger a reaction · be triggered by","e":"Indian independence was another radical change that was triggered by the events of World War II.","t":"Fiil"},{"w":"Regulate","m":"düzenlemek","c":"regulate behavior · regulate production · regulate the market · government regulation","e":"States emerged in order to regulate production and the exchange of products across regions.","t":"Fiil"},{"w":"Integrate","m":"entegre etmek, bütünleştirmek","c":"integrate systems · be integrated into · promote integration · integrate data","e":"Zara integrates its own design, production, and store distribution to respond to market changes quickly.","t":"Fiil"},{"w":"Enhance","m":"geliştirmek, artırmak","c":"enhance performance · enhance quality · enhance understanding · enhance communication","e":"Face-to-face communication enhances the richness and quality of interpersonal exchange.","t":"Fiil"},{"w":"Vary","m":"değişmek, farklılık göstermek","c":"vary according to · vary significantly · vary widely · vary from one to another","e":"Patterns of cooperation and competition are known to vary according to the cultural context.","t":"Fiil"},{"w":"Expose","m":"maruz bırakmak, açığa çıkarmak","c":"be exposed to · expose to risk · exposure to information · expose the truth","e":"Filter bubbles ensure that users are exposed mainly to content that reinforces their existing beliefs.","t":"Fiil"},{"w":"Associate","m":"ilişkilendirmek","c":"be associated with · closely associated · associate with · associate concepts","e":"Studies associate childhood peer rejection with a variety of adverse consequences including poor health.","t":"Fiil"},{"w":"Illustrate","m":"örneklemek, göstermek","c":"illustrate a point · clearly illustrate · illustrate a difference · best illustrate","e":"The best example that illustrates this theory of state formation is the case of Peru.","t":"Fiil"},{"w":"Overcome","m":"üstesinden gelmek, aşmak","c":"overcome challenges · overcome barriers · overcome difficulties · overcome resistance","e":"Many societies have struggled to overcome long-standing ethnic tensions after independence.","t":"Fiil"},{"w":"Pursue","m":"takip etmek, sürdürmek","c":"pursue a goal · pursue a policy · in pursuit of · actively pursue","e":"Nations can pursue their own interests even if it means contradicting their declared ideologies.","t":"Fiil"},{"w":"Acknowledge","m":"kabul etmek, tanımak","c":"acknowledge the fact · widely acknowledged · acknowledge a problem · acknowledge that","e":"Malinowski acknowledges that knowledge and rational thinking help human beings in certain areas of life.","t":"Fiil"},{"w":"Suppress","m":"bastırmak, engellemek","c":"suppress feelings · suppress information · be suppressed · suppress emotions","e":"When facing conflict, some managers respond by suppressing their feelings rather than confronting them.","t":"Fiil"},{"w":"Constitute","m":"oluşturmak, teşkil etmek","c":"constitute a threat · constitute part of · constitute the majority · constitute evidence","e":"Misleading digital content can constitute a serious threat to the integrity of democratic processes.","t":"Fiil"},{"w":"Persist","m":"sürmek, devam etmek","c":"persist in · persist despite · a persistent problem · issues persist","e":"Problems that are not resolved in early childhood may persist well into adulthood.","t":"Fiil"},{"w":"Significant","m":"önemli, belirgin","c":"significant role · highly significant · of great significance · significant impact","e":"Digital technology has brought about significant changes in media production and consumption.","t":"Sıfat"},{"w":"Widespread","m":"yaygın","c":"widespread use · become widespread · widespread support · widespread belief","e":"Beliefs in mana-like forces are widespread across many different cultural traditions.","t":"Sıfat"},{"w":"Prevalent","m":"yaygın, hâkim","c":"widely prevalent · become prevalent · most prevalent · increasingly prevalent","e":"Alternative medicine has become increasingly prevalent in many parts of the world.","t":"Sıfat"},{"w":"Dominant","m":"egemen, baskın","c":"dominant culture · dominant role · play a dominant role · dominant force","e":"Commercial television channels emerged as dominant actors, leading to a decline in state broadcasting.","t":"Sıfat"},{"w":"Inevitable","m":"kaçınılmaz","c":"inevitable outcome · become inevitable · almost inevitable · an inevitable result","e":"In areas with high population density and limited resources, wars were inevitable.","t":"Sıfat"},{"w":"Considerable","m":"önemli ölçüde, büyük","c":"considerable influence · considerable progress · a considerable amount · of considerable importance","e":"The nobles had considerable political importance as well as a great deal of social influence.","t":"Sıfat"},{"w":"Fundamental","m":"temel","c":"fundamental principle · fundamental change · fundamentally different · fundamental part","e":"Interpersonal communication appears to be a fundamental part of managerial activity in organizations.","t":"Sıfat"},{"w":"Distinct","m":"belirgin, farklı","c":"clearly distinct · distinct categories · a distinctive feature · produce distinct outcomes","e":"Rubin views loving as conceptually distinct from liking, differing in quality rather than quantity.","t":"Sıfat"},{"w":"Complex","m":"karmaşık","c":"complex system · highly complex · complex structure · complex relationships","e":"There was a complex class structure in most early states, ranging from monarch down to slaves.","t":"Sıfat"},{"w":"Explicit","m":"açık, net","c":"be explicit about · explicit communication · make something explicit · explicit message","e":"In individualist cultures, the message given is direct, clear, and explicit rather than implicit.","t":"Sıfat"},{"w":"Implicit","m":"örtük, zımni","c":"implicit message · implicit meaning · remain implicit · implicit assumption","e":"The communication style in collectivist cultures is indirect, implicit, and subtle.","t":"Sıfat"},{"w":"Gradual","m":"kademeli","c":"gradual change · a gradual process · gradual improvement · gradually evolve","e":"Chieftains gradually turned into states over time through a slow process of consolidation.","t":"Sıfat"},{"w":"Adverse","m":"olumsuz","c":"adverse effects · adverse conditions · adverse consequences · have an adverse impact","e":"Childhood peer rejection is associated with a variety of adverse consequences, including poor health.","t":"Sıfat"},{"w":"Diverse","m":"çeşitli","c":"culturally diverse · diverse perspectives · diverse group · wide diversity of ideas","e":"Individualist cultures are marked by a wide diversity of ideas and perspectives.","t":"Sıfat"},{"w":"Appropriate","m":"uygun","c":"be appropriate for · appropriate amount · appropriate response · most appropriate","e":"For autonomy to develop, children must be given an appropriate amount of restriction by caregivers.","t":"Sıfat"},{"w":"Excessive","m":"aşırı","c":"excessive use · be excessive · excessive restriction · cause excessive damage","e":"Children who are given excessive restriction by caregivers may develop feelings of shame and self-doubt.","t":"Sıfat"},{"w":"Vulnerable","m":"savunmasız","c":"be vulnerable to · highly vulnerable · make someone vulnerable · vulnerable groups","e":"Third world countries have always been especially vulnerable to violent civil conflicts.","t":"Sıfat"},{"w":"Prominent","m":"öne çıkan, önemli","c":"particularly prominent · play a prominent role · gain prominence · become prominent","e":"This belief was particularly prominent in Melanesia in the South Pacific.","t":"Sıfat"},{"w":"Crucial","m":"son derece önemli, kritik","c":"crucial role · crucial factor · be crucial to · of crucial importance","e":"Social competence is crucial for establishing and maintaining positive peer relationships.","t":"Sıfat"},{"w":"Abstract","m":"soyut","c":"abstract concepts · think abstractly · abstract thinking · abstract terms","e":"Individualist communication relies on abstract terms to define ideas for heterogeneous audiences.","t":"Sıfat"},{"w":"Adequate","m":"yeterli","c":"be adequate for · adequate resources · adequate care · provide adequate support","e":"Social welfare programs encouraged parents to care adequately for their children.","t":"Sıfat"},{"w":"Consistent","m":"tutarlı","c":"remain consistent · be consistent with · consistent results · consistent standards","e":"Companies working with selective retailers want to ensure consistent service standards.","t":"Sıfat"},{"w":"Extensive","m":"kapsamlı, geniş","c":"extensive research · extensive use · to a great extent · extensively studied","e":"The extensive use of \"I\" in individualist cultures reflects a strong focus on personal opinion.","t":"Sıfat"},{"w":"Mutual","m":"karşılıklı","c":"mutual benefit · mutual respect · mutually satisfactory · mutual agreement","e":"The confronting strategy in conflict management works towards a mutually satisfactory conclusion.","t":"Sıfat"},{"w":"Conventional","m":"geleneksel, alışılmış","c":"conventional medicine · conventional wisdom · conventional approach · non-conventional","e":"Many people turn to alternative medicine due to unpleasant side effects of conventional treatments.","t":"Sıfat"},{"w":"Rational","m":"rasyonel, mantıklı","c":"rational decision · rational thinking · beyond rational control · rational explanation","e":"Magic enables people to feel in control when events are beyond rational human control.","t":"Sıfat"},{"w":"Stable","m":"istikrarlı","c":"stable identity · maintain stability · stable economy · relatively stable","e":"Adolescents who cannot discover their identity may lack a stable sense of self into adulthood.","t":"Sıfat"},{"w":"Sophisticated","m":"gelişmiş, sofistike","c":"highly sophisticated · sophisticated system · sophisticated technology · sophisticated approach","e":"Managing reverse logistics effectively requires sophisticated information technologies and tracking systems.","t":"Sıfat"},{"w":"Pervasive","m":"her yere yayılmış, yaygın","c":"become pervasive · pervasive influence · pervasive trend · increasingly pervasive","e":"Collaboration is more pervasive in societies that place high value on interdependence.","t":"Sıfat"},{"w":"Contradictory","m":"çelişkili","c":"contradictory evidence · contradictory views · be contradictory · internally contradictory","e":"Nations can adopt policies that contradict their declared ideologies when it serves their national interests.","t":"Sıfat"},{"w":"Conflict","m":"çatışma, çelişki","c":"resolve a conflict · interpersonal conflict · conflict arises · conflict management","e":"Interpersonal conflict arises from a variety of sources, including personality clashes and threats to status.","t":"İsim"},{"w":"Perception","m":"algı","c":"public perception · change perception · social perception · selective perception","e":"Our perception plays an important role during interactions with other people in social situations.","t":"İsim"},{"w":"Identity","m":"kimlik","c":"cultural identity · sense of identity · establish identity · identity crisis","e":"Myths have become an important part of cultural identity and shared understanding over generations.","t":"İsim"},{"w":"Perspective","m":"bakış açısı","c":"from a different perspective · gain perspective · broader perspective · change perspective","e":"Social perspective-taking involves the ability to adopt another person's perspective.","t":"İsim"},{"w":"Awareness","m":"farkındalık","c":"raise awareness · lack of awareness · growing awareness · public awareness","e":"Many Afro-Americans developed growing awareness of their social and economic disadvantages.","t":"İsim"},{"w":"Authority","m":"otorite, yetki","c":"challenge authority · establish authority · figure of authority · strengthen authority","e":"Rulers cooperated with religious leaders in order to strengthen their authority over the state.","t":"İsim"},{"w":"Outcome","m":"sonuç, çıktı","c":"desired outcome · positive outcome · conflict outcome · undesirable outcomes","e":"Studies show that the strategies chosen by participants directly determine conflict outcomes.","t":"İsim"},{"w":"Consequence","m":"sonuç","c":"as a consequence · serious consequences · unintended consequences · face the consequences","e":"As a consequence of high population density, wars broke out among villages competing for resources.","t":"İsim"},{"w":"Resource","m":"kaynak","c":"limited resources · human resources · access to resources · natural resources","e":"Most groups in organizations feel that they need more resources, which leads to intergroup conflict.","t":"İsim"},{"w":"Institution","m":"kurum","c":"strengthen institutions · formal institution · government institution · social institution","e":"Institutions can be strengthened through training people and upgrading their technology.","t":"İsim"},{"w":"Interaction","m":"etkileşim","c":"social interaction · face-to-face interaction · promote interaction · daily interaction","e":"Early family interactions determine the kind of personal relationships children will have as adults.","t":"İsim"},{"w":"Tendency","m":"eğilim","c":"have a tendency to · a natural tendency · strong tendency · tendency to categorize","e":"People have a natural tendency to categorize the world around them into binary oppositions.","t":"İsim"},{"w":"Mechanism","m":"mekanizma","c":"defense mechanism · coping mechanism · develop a mechanism · underlying mechanism","e":"People needed a mechanism to regulate production and the exchange of products between communities.","t":"İsim"},{"w":"Phenomenon","m":"fenomen, olgu","c":"social phenomenon · widespread phenomenon · explain a phenomenon · a complex phenomenon","e":"Tyler thought that religion was born because people tried to understand phenomena they could not explain.","t":"İsim"},{"w":"Pattern","m":"kalıp, örüntü","c":"behavioral pattern · follow a pattern · communication pattern · cultural pattern","e":"Social, religious, and military patterns developed in the same order in five different geographic areas.","t":"İsim"},{"w":"Strategy","m":"strateji","c":"adopt a strategy · develop a strategy · distribution strategy · conflict strategy","e":"Companies choose one of three distribution intensity strategies depending on their business goals.","t":"İsim"},{"w":"Diversity","m":"çeşitlilik","c":"cultural diversity · promote diversity · embrace diversity · wide diversity","e":"Governments advocate domestic media productions to preserve cultural diversity across Europe.","t":"İsim"},{"w":"Circumstance","m":"koşul, durum","c":"under these circumstances · given the circumstances · exceptional circumstances · in different circumstances","e":"This fortunate combination of circumstances made possible a remarkable period of dynamic economic growth.","t":"İsim"},{"w":"Contribution","m":"katkı","c":"make a contribution · significant contribution · individual contribution · financial contribution","e":"Children learn to take responsibility for their contributions to a friendship during development.","t":"İsim"},{"w":"Implication","m":"çıkarım, dolaylı sonuç","c":"have implications for · broad implications · serious implications · policy implications","e":"Differences in social behavior between cultures have important implications for communication.","t":"İsim"},{"w":"Assumption","m":"varsayım","c":"make an assumption · underlying assumption · challenge an assumption · false assumption","e":"Levi-Strauss applied his assumptions about classification and binary opposition to myths and folktales.","t":"İsim"},{"w":"Evidence","m":"kanıt","c":"provide evidence · sufficient evidence · evidence suggests · empirical evidence","e":"Evidence suggests that the bandwagon and sympathy effects have limited influence on election results.","t":"İsim"},{"w":"Distinction","m":"ayrım, fark","c":"make a distinction · clear distinction · draw a distinction · key distinction","e":"Bettelheim draws a useful distinction between the tragic myth and the hopeful folktale.","t":"İsim"},{"w":"Challenge","m":"zorluk / meydan okumak","c":"face a challenge · pose a challenge · major challenge · overcome challenges","e":"Reverse logistics presents serious challenges for companies due to its irregular and unpredictable nature.","t":"İsim"},{"w":"Priority","m":"öncelik","c":"set priorities · top priority · shift priorities · list of priorities","e":"Americans' priorities have shifted over the past several years toward economic issues and political concerns.","t":"İsim"},{"w":"Welfare","m":"refah","c":"social welfare · child welfare · promote welfare · welfare program","e":"Loving manifests itself in the form of strong attachment, intimacy, and concern for the beloved's welfare.","t":"İsim"},{"w":"Credibility","m":"güvenilirlik","c":"establish credibility · lack credibility · increase credibility · source credibility","e":"Credibility increases when the communicator belongs to the same in-group as the receiver.","t":"İsim"},{"w":"Alternative","m":"alternatif","c":"seek alternatives · alternative approach · viable alternative · alternative medicine","e":"Many people turn to alternative medicine because of the harmful side effects of conventional treatments.","t":"İsim"},{"w":"Expansion","m":"genişleme, büyüme","c":"economic expansion · rapid expansion · expansion of knowledge · support expansion","e":"European governments followed policies specifically designed to boost economic expansion after World War II.","t":"İsim"},{"w":"Ideology","m":"ideoloji","c":"political ideology · hold an ideology · ideological differences · declared ideology","e":"Nations can even contradict their declared ideologies in the game of international power politics.","t":"İsim"},{"w":"Integration","m":"bütünleşme, entegrasyon","c":"social integration · economic integration · promote integration · obstruct integration","e":"Discrimination against immigrants from former colonies obstructed their integration into mainstream society.","t":"İsim"},{"w":"Discrimination","m":"ayrımcılık","c":"face discrimination · racial discrimination · end discrimination · housing discrimination","e":"Many immigrants from former colonies faced serious discrimination, especially in jobs and housing.","t":"İsim"},{"w":"Innovation","m":"yenilik","c":"drive innovation · technological innovation · foster innovation · encourage innovation","e":"The war encouraged a variety of innovations that proved to be valuable in the post-war economic period.","t":"İsim"},{"w":"Formation","m":"oluşum, kuruluş","c":"state formation · theory of formation · cultural formation · group formation","e":"The hydraulic theory explains the conditions that led to state formation through irrigation needs.","t":"İsim"},{"w":"Characteristic","m":"özellik / kendine özgü","c":"key characteristic · characteristic feature · be characterized by · universal characteristic","e":"One of the characteristic features of early states is a complex class structure with distinct hierarchies.","t":"İsim"},{"w":"Cooperation","m":"işbirliği","c":"promote cooperation · require cooperation · international cooperation · encourage cooperation","e":"Cooperation and competition are fundamental forms of interaction found in all individuals and groups.","t":"İsim"},{"w":"Demand","m":"talep / talep etmek","c":"meet demand · create demand · consumer demand · growing demand","e":"Social marketing uses advertising techniques specifically designed to create demand for a product or idea.","t":"İsim"},{"w":"Transition","m":"geçiş, değişim","c":"smooth transition · undergo a transition · period of transition · make a transition","e":"The transition from one stage of psychosocial development requires resolving the conflict of that stage.","t":"İsim"},{"w":"Rejection","m":"reddedilme","c":"face rejection · peer rejection · experience rejection · lead to rejection","e":"Studies indicate that peer rejection is strongly associated with poor intellectual development in children.","t":"İsim"},{"w":"Aggression","m":"saldırganlık","c":"physical aggression · relational aggression · display aggression · aggression leads to","e":"Research shows that the most common reason for peer rejection is the aggressiveness of the child.","t":"İsim"},{"w":"In contrast to","m":"tersine, aksine","c":"","e":"In contrast to conventional medicine, alternative health care emphasizes the patient's active role in treatment.","t":"Bağlaç"},{"w":"As a result of","m":"...sonucunda","c":"","e":"States emerged as a result of the need for irrigation projects to coordinate agricultural manpower.","t":"Bağlaç"},{"w":"In addition to","m":"...ek olarak, bunun yanı sıra","c":"","e":"In addition to reaching wider markets, intermediaries also reduce the producer's logistical burden.","t":"Bağlaç"},{"w":"On the other hand","m":"öte yandan","c":"","e":"In Melanesia, mana was available to all. In Polynesia, on the other hand, it was attached only to the nobility.","t":"Bağlaç"},{"w":"Whereas","m":"oysa, iken","c":"","e":"Boys tend to engage in direct physical aggression, whereas girls often practice relational aggression.","t":"Bağlaç"},{"w":"Nevertheless","m":"bununla birlikte, yine de","c":"","e":"We have no way of knowing if religion existed before the Neandertals. Nevertheless, several theories exist.","t":"Bağlaç"},{"w":"Regardless of","m":"...bakılmaksızın","c":"","e":"Religion has existed in all societies regardless of how primitive or developed they are.","t":"Bağlaç"},{"w":"In terms of","m":"...açısından, bakımından","c":"","e":"Europe was completely transformed in terms of the economy, politics, and social structure.","t":"Bağlaç"},{"w":"Due to","m":"...nedeniyle","c":"","e":"Britain's relative economic inactivity was partly due to its early industrialization.","t":"Bağlaç"},{"w":"In other words","m":"başka bir deyişle","c":"","e":"Ordinary people could not tolerate as much mana as royalty could. In other words, mana was hierarchical.","t":"Bağlaç"},{"w":"Therefore","m":"bu nedenle, dolayısıyla","c":"","e":"The family is the immediate environment of the child; therefore, its conditions directly affect the child.","t":"Bağlaç"},{"w":"Consequently","m":"sonuç olarak","c":"","e":"Men have historically sought physical attractiveness in partners; consequently, appearance became highly valued.","t":"Bağlaç"},{"w":"Despite","m":"...rağmen","c":"","e":"Despite their undeniable benefits, AI technologies have facilitated the creation of misleading deep fakes.","t":"Bağlaç"},{"w":"Moreover","m":"dahası, üstelik","c":"","e":"Moreover, recent research suggests that age and education level are strong predictors of ideological identification.","t":"Bağlaç"},{"w":"Furthermore","m":"ayrıca, dahası","c":"","e":"Furthermore, females and males have been found to opt for different types of alternative treatments.","t":"Bağlaç"},{"w":"Thus","m":"dolayısıyla, böylece","c":"","e":"The community can negotiate with more powerful institutions; thus, it will be able to take care of itself.","t":"Bağlaç"},{"w":"Although","m":"her ne kadar...olsa da, ...olmasına rağmen","c":"","e":"Although these five areas had no contact with each other, their social patterns developed similarly.","t":"Bağlaç"},{"w":"In spite of","m":"...rağmen","c":"","e":"In spite of high population density and wars, no states emerged in Papua New Guinea.","t":"Bağlaç"},{"w":"As well as","m":"...yanı sıra","c":"","e":"Nobles had considerable political importance as well as a great deal of social influence.","t":"Bağlaç"},{"w":"Rather than","m":"...yerine, ...dan ziyade","c":"","e":"Distribution should be seen as a strategic business activity rather than a purely technical one.","t":"Bağlaç"},{"w":"Not only...but also","m":"...olmakla kalmayıp...da","c":"","e":"Colonization did not only affect former colonies but also influenced Western societies themselves.","t":"Bağlaç"},{"w":"Provided that","m":"...koşuluyla, ...takdirde","c":"","e":"Autonomy develops in children provided that they are given an appropriate amount of restriction.","t":"Bağlaç"},{"w":"With regard to","m":"...ile ilgili olarak, ...konusunda","c":"","e":"With regard to communication, individualist and collectivist cultures are vastly different from each other.","t":"Bağlaç"},{"w":"In light of","m":"...ışığında, göz önüne alındığında","c":"","e":"In the final stage, children learn to consider a relationship in the light of their own motives and needs.","t":"Bağlaç"},{"w":"By contrast","m":"buna karşın, buna karşılık","c":"","e":"By contrast, France withdrew from Morocco and Tunisia with far less conflict than it faced in Algeria.","t":"Bağlaç"},{"w":"Given that","m":"...göz önüne alındığında","c":"","e":"Given that distribution significantly affects price and availability, it must be treated as a strategic matter.","t":"Bağlaç"},{"w":"As opposed to","m":"aksine, ...yerine","c":"","e":"Alternative medicine emphasizes patient participation as opposed to simply following the doctor's orders.","t":"Bağlaç"},{"w":"To the extent that","m":"...ölçüde ki","c":"","e":"Gender differences in medicine use reflect social roles to the extent that they shape individual preferences.","t":"Bağlaç"},{"w":"Apart from","m":"...dışında, ...yanı sıra","c":"","e":"Apart from transportation, product distribution also includes the organizational arrangements that make products available.","t":"Bağlaç"},{"w":"Whether...or","m":"ister...ister / ...olsun olmasın","c":"","e":"Whether children can develop satisfactory peer relations or not is ultimately determined by early family interactions.","t":"Bağlaç"},{"w":"Even though","m":"her ne kadar...olsa da","c":"","e":"A person can choose to avoid abstractive communication even though he is perfectly capable of it.","t":"Bağlaç"},{"w":"By means of","m":"aracılığıyla, ...ile","c":"","e":"Irrigation involves supplying water to agricultural crops by means of carefully constructed canals.","t":"Bağlaç"},{"w":"In response to","m":"...yanıt olarak, ...karşılığında","c":"","e":"Europe removed obstacles to international trade in response to increased foreign demand for goods.","t":"Bağlaç"},{"w":"At the same time","m":"aynı zamanda","c":"","e":"Personalization makes media consumption more convenient; at the same time, it creates harmful filter bubbles.","t":"Bağlaç"},{"w":"In the long run","m":"uzun vadede, sonuç olarak","c":"· Örnek Cümle","e":"Discrimination against immigrants obstructed their integration, which in the long run contributed to increased social tension.","t":"Bağlaç"},{"w":"Perceive","m":"algılamak, fark etmek","c":"perceive a threat · perceive as normal · perceive the difference","e":"She perceived a subtle change in his behavior over time.","t":"Fiil"},{"w":"Manifest","m":"tezahür etmek, ortaya çıkmak","c":"manifest itself · manifest as symptoms · manifest in different ways","e":"Depression can manifest in many different forms in different people.","t":"Fiil"},{"w":"Enhance","m":"geliştirmek, güçlendirmek","c":"enhance performance · enhance memory · enhance quality","e":"Regular exercise can significantly enhance cognitive abilities.","t":"Fiil"},{"w":"Inhibit","m":"engellemek, bastırmak","c":"inhibit growth · inhibit aggression · inhibit behavior","e":"Fear can inhibit a person's ability to make rational decisions.","t":"Fiil"},{"w":"Facilitate","m":"kolaylaştırmak, mümkün kılmak","c":"facilitate learning · facilitate communication · facilitate change","e":"Good infrastructure facilitates economic growth and development.","t":"Fiil"},{"w":"Demonstrate","m":"göstermek, kanıtlamak","c":"demonstrate skills · demonstrate ability · demonstrate evidence","e":"The study demonstrated a clear link between stress and poor health.","t":"Fiil"},{"w":"Attribute","m":"atfetmek, bağlamak","c":"attribute success to · attribute failure to · attribute behavior to","e":"Scientists attribute many disorders to genetic and environmental factors.","t":"Fiil"},{"w":"Exhibit","m":"sergilemek, göstermek","c":"exhibit signs of · exhibit behavior · exhibit features","e":"Children often exhibit signs of anxiety before taking exams.","t":"Fiil"},{"w":"Assess","m":"değerlendirmek, ölçmek","c":"assess the situation · assess risks · assess performance","e":"Doctors carefully assess patients before prescribing any medication.","t":"Fiil"},{"w":"Acknowledge","m":"kabul etmek, tanımak","c":"acknowledge a mistake · acknowledge the importance · acknowledge the fact","e":"She acknowledged that the problem was far more serious than expected.","t":"Fiil"},{"w":"Accumulate","m":"biriktirmek, birikmek","c":"accumulate wealth · accumulate evidence · accumulate knowledge","e":"Over the years, researchers have accumulated substantial evidence on this topic.","t":"Fiil"},{"w":"Sustain","m":"sürdürmek, devam ettirmek","c":"sustain growth · sustain attention · sustain a relationship","e":"It is difficult to sustain high productivity levels over extended periods.","t":"Fiil"},{"w":"Derive","m":"elde etmek, türemek","c":"derive satisfaction · derive meaning · derive from experience","e":"Many English words derive from Latin or Ancient Greek origins.","t":"Fiil"},{"w":"Adopt","m":"benimsemek, kabul etmek","c":"adopt a policy · adopt a strategy · adopt new habits","e":"The government adopted strict new measures to address rising inflation.","t":"Fiil"},{"w":"Integrate","m":"entegre etmek, bütünleştirmek","c":"integrate into society · integrate knowledge · integrate skills","e":"The program helps newcomers integrate into the local community.","t":"Fiil"},{"w":"Resolve","m":"çözmek, gidermek","c":"resolve a conflict · resolve tension · resolve a problem","e":"The two parties finally managed to resolve their long-standing dispute.","t":"Fiil"},{"w":"Exceed","m":"aşmak, geçmek","c":"exceed expectations · exceed limits · exceed capacity","e":"His academic performance consistently exceeded everyone's expectations.","t":"Fiil"},{"w":"Alleviate","m":"hafifletmek, azaltmak","c":"alleviate pain · alleviate poverty · alleviate stress","e":"Meditation has been shown to alleviate stress and reduce anxiety.","t":"Fiil"},{"w":"Conform","m":"uymak, uyum sağlamak","c":"conform to norms · conform to expectations · conform to standards","e":"Teenagers often feel intense pressure to conform to social norms.","t":"Fiil"},{"w":"Reinforce","m":"pekiştirmek, güçlendirmek","c":"reinforce a belief · reinforce behavior · reinforce stereotypes","e":"Positive feedback from teachers reinforces good learning habits.","t":"Fiil"},{"w":"Undermine","m":"zayıflatmak, sarsmak","c":"undermine authority · undermine confidence · undermine democracy","e":"Constant criticism can seriously undermine a child's sense of self-worth.","t":"Fiil"},{"w":"Replicate","m":"tekrarlamak, yinelemek","c":"replicate results · replicate an experiment · replicate success","e":"Researchers in different countries attempted to replicate the original study.","t":"Fiil"},{"w":"Distinguish","m":"ayırt etmek, ayrım yapmak","c":"distinguish between · distinguish features · distinguish right from wrong","e":"It is vital to distinguish between correlation and causation in research.","t":"Fiil"},{"w":"Generate","m":"üretmek, oluşturmak","c":"generate income · generate ideas · generate energy","e":"The new policy was expected to generate thousands of new jobs.","t":"Fiil"},{"w":"Associate","m":"ilişkilendirmek, bağdaştırmak","c":"associate with · closely associated · associate a smell with a memory","e":"Scientists associate chronic sleep deprivation with increased mental illness risk.","t":"Fiil"},{"w":"Suppress","m":"bastırmak, engellemek","c":"suppress feelings · suppress information · suppress aggression","e":"She suppressed her emotions and responded to the criticism calmly.","t":"Fiil"},{"w":"Regulate","m":"düzenlemek, kontrol etmek","c":"regulate behavior · regulate the economy · regulate temperature","e":"The prefrontal cortex plays a key role in regulating emotional responses.","t":"Fiil"},{"w":"Impose","m":"dayatmak, uygulamak","c":"impose rules · impose restrictions · impose sanctions","e":"The government imposed strict limits on carbon emissions.","t":"Fiil"},{"w":"Exploit","m":"sömürmek, kullanmak","c":"exploit resources · exploit weaknesses · exploit opportunities","e":"Populist leaders often exploit economic anxiety for political gain.","t":"Fiil"},{"w":"Diminish","m":"azalmak, küçülmek","c":"diminish in importance · diminish over time · diminish confidence","e":"As new evidence emerged, the theory's credibility began to diminish.","t":"Fiil"},{"w":"Emerge","m":"ortaya çıkmak, belirmek","c":"emerge from · emerge as a leader · emerge victorious","e":"New behavioral patterns emerged in the group after weeks of observation.","t":"Fiil"},{"w":"Acquire","m":"kazanmak, edinmek","c":"acquire skills · acquire knowledge · acquire a language","e":"Children acquire language at a remarkably fast rate in early life.","t":"Fiil"},{"w":"Distort","m":"çarpıtmak, bozmak","c":"distort the truth · distort reality · distort perceptions","e":"Survivorship bias distorts our understanding of how success actually works.","t":"Fiil"},{"w":"Infer","m":"çıkarsama yapmak","c":"infer meaning · infer from evidence · draw an inference","e":"From the data, we can infer that motivation varies across cultures.","t":"Fiil"},{"w":"Convey","m":"iletmek, aktarmak","c":"convey a message · convey emotions · convey information","e":"The speaker conveyed her ideas with remarkable clarity and confidence.","t":"Fiil"},{"w":"Refrain","m":"kaçınmak, vazgeçmek","c":"refrain from doing · refrain from eating · refrain from commenting","e":"Some monkeys refrained from eating to avoid causing pain to another.","t":"Fiil"},{"w":"Advocate","m":"savunmak, desteklemek","c":"advocate for change · advocate a policy · advocate equal rights","e":"Many scientists advocate for stricter controls on animal experimentation.","t":"Fiil"},{"w":"Provoke","m":"kışkırtmak, yol açmak","c":"provoke a reaction · provoke anger · provoke debate","e":"His controversial statements provoked a fierce debate among researchers.","t":"Fiil"},{"w":"Engage","m":"katılmak, dahil olmak","c":"engage in discussion · engage with students · engage an audience","e":"Students who actively engage in discussions tend to retain information better.","t":"Fiil"},{"w":"Interpret","m":"yorumlamak, anlamlandırmak","c":"interpret data · interpret results · interpret behavior","e":"Different cultures may interpret the same gesture in entirely different ways.","t":"Fiil"},{"w":"Stimulate","m":"uyarmak, harekete geçirmek","c":"stimulate growth · stimulate the economy · stimulate curiosity","e":"Reading widely stimulates the imagination and enriches vocabulary.","t":"Fiil"},{"w":"Classify","m":"sınıflandırmak","c":"classify into groups · classify information · classify organisms","e":"Researchers classify motives into primary and secondary categories.","t":"Fiil"},{"w":"Fluctuate","m":"dalgalanmak, değişmek","c":"prices fluctuate · fluctuate between · fluctuate widely","e":"Motivation levels can fluctuate greatly depending on current circumstances.","t":"Fiil"},{"w":"Entail","m":"gerektirmek, içermek","c":"entail risks · entail responsibility · what the process entails","e":"Leadership entails not only authority but also significant responsibility.","t":"Fiil"},{"w":"Foster","m":"beslemek, teşvik etmek","c":"foster creativity · foster relationships · foster development","e":"A supportive environment fosters confidence and resilience in learners.","t":"Fiil"},{"w":"Exert","m":"uygulamak (baskı/etki)","c":"exert pressure · exert influence · exert control","e":"Peer groups exert a powerful influence on teenagers' attitudes and behavior.","t":"Fiil"},{"w":"Warrant","m":"gerekli kılmak, haklı çıkarmak","c":"warrant attention · warrant concern · warrant further investigation","e":"These preliminary findings warrant far more rigorous investigation.","t":"Fiil"},{"w":"Hinder","m":"engellemek, aksatmak","c":"hinder progress · hinder communication · hinder development","e":"A lack of resources can seriously hinder important scientific research.","t":"Fiil"},{"w":"Deviate","m":"sapmak, ayrılmak","c":"deviate from the norm · deviate from a plan · deviate significantly","e":"Any behavior that deviates significantly from the norm is considered unusual.","t":"Fiil"},{"w":"Mitigate","m":"hafifletmek, azaltmak","c":"mitigate risk · mitigate the effects · mitigating circumstances","e":"The new policy was designed to mitigate the harmful effects of poverty.","t":"Fiil"},{"w":"Discern","m":"seçmek, fark etmek","c":"discern a pattern · discern the truth · discern between","e":"An experienced researcher can discern patterns that novices might overlook.","t":"Fiil"},{"w":"Exacerbate","m":"kötüleştirmek, şiddetlendirmek","c":"exacerbate the situation · exacerbate tensions · exacerbate a problem","e":"Economic inequality can exacerbate social tensions within a community.","t":"Fiil"},{"w":"Encompass","m":"kapsamak, içermek","c":"encompass a wide range · encompass all aspects · encompass the concept","e":"The term 'motivation' encompasses a wide range of internal and external factors.","t":"Fiil"},{"w":"Allude","m":"ima etmek, değinmek","c":"allude to a problem · allude to a theory · allude to history","e":"The author alluded to several historical events without directly naming them.","t":"Fiil"},{"w":"Circumvent","m":"atlatmak, aşmak","c":"circumvent rules · circumvent restrictions · circumvent a problem","e":"Some companies try to circumvent environmental regulations to cut costs.","t":"Fiil"},{"w":"Perception","m":"algı, kavrayış","c":"public perception · perception of reality · visual perception","e":"Public perception of the issue changed after the new evidence emerged.","t":"İsim"},{"w":"Phenomenon","m":"fenomen, olgu","c":"natural phenomenon · social phenomenon · widespread phenomenon","e":"Survivorship bias is a well-documented psychological phenomenon.","t":"İsim"},{"w":"Hierarchy","m":"hiyerarşi, sıradüzen","c":"social hierarchy · dominance hierarchy · establish a hierarchy","e":"Every organization operates within a clear hierarchy of authority.","t":"İsim"},{"w":"Empathy","m":"empati, duygudaşlık","c":"show empathy · lack of empathy · feel empathy toward","e":"A good doctor must show empathy toward their patients' fears.","t":"İsim"},{"w":"Threshold","m":"eşik, sınır noktası","c":"pain threshold · frustration threshold · below the threshold","e":"Once anxiety exceeds a certain threshold, it impairs rational thinking.","t":"İsim"},{"w":"Aggression","m":"saldırganlık","c":"physical aggression · suppress aggression · direct aggression","e":"Prolonged frustration can trigger a sudden outburst of aggression.","t":"İsim"},{"w":"Autonomy","m":"özerklik, bağımsızlık","c":"personal autonomy · economic autonomy · maintain autonomy","e":"Young adults need a degree of autonomy to develop their own identities.","t":"İsim"},{"w":"Mechanism","m":"mekanizma, işleyiş","c":"defense mechanism · coping mechanism · learning mechanism","e":"The brain has built-in mechanisms for dealing with emotional stress.","t":"İsim"},{"w":"Correlation","m":"korelasyon, bağlantı","c":"strong correlation · correlation between · find a correlation","e":"There is a strong correlation between socioeconomic status and achievement.","t":"İsim"},{"w":"Stimulus","m":"uyaran, tetikleyici","c":"external stimulus · respond to stimuli · sensory stimulus","e":"Researchers used visual stimuli to measure participants' emotional responses.","t":"İsim"},{"w":"Implication","m":"çıkarım, yansıma, sonuç","c":"have implications for · far-reaching implications · ethical implications","e":"The findings have serious implications for public health policy.","t":"İsim"},{"w":"Consensus","m":"uzlaşı, fikir birliği","c":"reach a consensus · scientific consensus · lack of consensus","e":"There is no scientific consensus on the drug's long-term effects.","t":"İsim"},{"w":"Deprivation","m":"yoksunluk, mahrumiyet","c":"sleep deprivation · sensory deprivation · economic deprivation","e":"Sleep deprivation seriously affects concentration and decision-making.","t":"İsim"},{"w":"Incentive","m":"teşvik, güdü","c":"financial incentive · provide incentives · lack of incentive","e":"Tax reductions serve as a powerful incentive for attracting investment.","t":"İsim"},{"w":"Constraint","m":"kısıt, sınırlama","c":"time constraint · budget constraint · under constraint","e":"The research was conducted under significant financial constraints.","t":"İsim"},{"w":"Manipulation","m":"manipülasyon, yönlendirme","c":"emotional manipulation · genetic manipulation · manipulation of data","e":"Emotional manipulation is a common tactic observed in abusive relationships.","t":"İsim"},{"w":"Ambiguity","m":"belirsizlik, muğlaklık","c":"moral ambiguity · create ambiguity · reduce ambiguity","e":"The legal text contained areas of ambiguity requiring court interpretation.","t":"İsim"},{"w":"Prevalence","m":"yaygınlık, sıklık","c":"high prevalence · growing prevalence · prevalence of a disorder","e":"The prevalence of social media addiction is increasing among teenagers.","t":"İsim"},{"w":"Obligation","m":"yükümlülük, zorunluluk","c":"moral obligation · legal obligation · have an obligation to","e":"We have a moral obligation to protect the environment for future generations.","t":"İsim"},{"w":"Scrutiny","m":"denetim, dikkatli inceleme","c":"under scrutiny · public scrutiny · close scrutiny","e":"The politician's financial decisions were placed under intense public scrutiny.","t":"İsim"},{"w":"Discrepancy","m":"tutarsızlık, farklılık","c":"significant discrepancy · discrepancy between · explain the discrepancy","e":"There was a notable discrepancy between the official figures and actual data.","t":"İsim"},{"w":"Rationale","m":"gerekçe, mantıksal dayanak","c":"provide a rationale · underlying rationale · rationale for a decision","e":"She provided a clear and convincing rationale for her controversial decision.","t":"İsim"},{"w":"Trajectory","m":"yörünge, gelişim seyri","c":"developmental trajectory · career trajectory · growth trajectory","e":"The company's growth trajectory has been impressive over the past five years.","t":"İsim"},{"w":"Paradigm","m":"paradigma, düşünce çerçevesi","c":"paradigm shift · dominant paradigm · challenge a paradigm","e":"The discovery caused a fundamental paradigm shift in understanding disease.","t":"İsim"},{"w":"Assertion","m":"iddia, güçlü bir beyan","c":"make an assertion · bold assertion · support an assertion","e":"His assertion that prices would fall proved to be entirely correct.","t":"İsim"},{"w":"Disposition","m":"eğilim, yatkınlık, mizaç","c":"natural disposition · disposition toward · innate disposition","e":"She has a natural disposition toward creativity and unconventional thinking.","t":"İsim"},{"w":"Premise","m":"önerme, temel varsayım","c":"false premise · underlying premise · based on the premise","e":"The entire argument collapsed because it was built on a false premise.","t":"İsim"},{"w":"Bias","m":"önyargı, yanlılık","c":"confirmation bias · survivorship bias · unconscious bias","e":"Confirmation bias leads people to favor information that confirms their beliefs.","t":"İsim"},{"w":"Conundrum","m":"çıkmaz, zor sorun","c":"face a conundrum · chicken-and-egg conundrum · ethical conundrum","e":"The researchers encountered a classic chicken-or-the-egg conundrum.","t":"İsim"},{"w":"Equilibrium","m":"denge, denge noktası","c":"stable equilibrium · maintain equilibrium · reach equilibrium","e":"The conflict results in a stable equilibrium where forces balance each other.","t":"İsim"},{"w":"Stigma","m":"damgalanma, toplumsal utanç","c":"social stigma · face stigma · reduce stigma","e":"There is still a strong social stigma attached to mental health conditions.","t":"İsim"},{"w":"Misconception","m":"yanlış kanı, hatalı inanç","c":"common misconception · correct a misconception · widespread misconception","e":"It is a common misconception that intelligence is a fixed and unchangeable trait.","t":"İsim"},{"w":"Spectrum","m":"yelpaze, geniş çeşitlilik","c":"on a spectrum · wide spectrum · spectrum of opinions","e":"People's attitudes toward animal rights exist on a broad spectrum.","t":"İsim"},{"w":"Deterioration","m":"bozulma, kötüleşme","c":"rapid deterioration · deterioration of conditions · economic deterioration","e":"The rapid deterioration of living standards fueled widespread social unrest.","t":"İsim"},{"w":"Reciprocity","m":"karşılıklılık, mütekabiliyet","c":"principle of reciprocity · social reciprocity · expect reciprocity","e":"Healthy relationships are built on a foundation of trust and reciprocity.","t":"İsim"},{"w":"Intervention","m":"müdahale","c":"early intervention · government intervention · require intervention","e":"Early intervention in childhood development can have lasting positive effects.","t":"İsim"},{"w":"Discontent","m":"hoşnutsuzluk, memnuniyetsizlik","c":"social discontent · growing discontent · express discontent","e":"Growing economic discontent created fertile ground for political extremism.","t":"İsim"},{"w":"Repercussion","m":"yansıma, olumsuz sonuç","c":"have repercussions · face repercussions · far-reaching repercussions","e":"The policy change had far-reaching repercussions for the entire industry.","t":"İsim"},{"w":"Susceptibility","m":"duyarlılık, yatkınlık","c":"genetic susceptibility · susceptibility to disease · increase susceptibility","e":"Genetic factors can significantly increase a person's susceptibility to mental illness.","t":"İsim"},{"w":"Compliance","m":"uyum, itaat, boyun eğme","c":"ensure compliance · compliance with rules · lack of compliance","e":"All participants were required to demonstrate compliance with ethical guidelines.","t":"İsim"},{"w":"Prevalent","m":"yaygın, sık görülen","c":"highly prevalent · prevalent among · prevalent in society","e":"Anxiety disorders are particularly prevalent among young adults in urban areas.","t":"Sıfat"},{"w":"Chronic","m":"kronik, uzun süreli","c":"chronic pain · chronic illness · chronic stress","e":"Chronic stress has a damaging effect on the immune system over time.","t":"Sıfat"},{"w":"Subtle","m":"ince, fark edilmesi güç","c":"subtle difference · subtle change · subtle influence","e":"There was a subtle but important difference between the two approaches.","t":"Sıfat"},{"w":"Fundamental","m":"temel, köklü, asıl","c":"fundamental principle · fundamental change · fundamental right","e":"Access to clean water is a fundamental human right, not a privilege.","t":"Sıfat"},{"w":"Inherent","m":"içsel, doğasında var olan","c":"inherent risk · inherent value · inherent in the system","e":"There are inherent risks in every financial investment that cannot be eliminated.","t":"Sıfat"},{"w":"Ambiguous","m":"belirsiz, muğlak","c":"ambiguous message · morally ambiguous · remain ambiguous","e":"The survey results were ambiguous and difficult to interpret clearly.","t":"Sıfat"},{"w":"Explicit","m":"açık, belirgin, net","c":"explicit instructions · explicit evidence · make it explicit","e":"The contract includes explicit terms and conditions both parties must follow.","t":"Sıfat"},{"w":"Adaptive","m":"uyumlu, adapte edilebilir","c":"adaptive behavior · adaptive strategy · adaptive response","e":"An adaptive approach to learning helps students overcome different challenges.","t":"Sıfat"},{"w":"Persistent","m":"ısrarcı, devam eden","c":"persistent effort · persistent problem · persistent pain","e":"Despite persistent setbacks, she refused to abandon her long-term goals.","t":"Sıfat"},{"w":"Inadequate","m":"yetersiz, eksik","c":"inadequate resources · prove inadequate · inadequate response","e":"The government's response to the crisis was widely criticized as inadequate.","t":"Sıfat"},{"w":"Profound","m":"derin, köklü, büyük etkili","c":"profound impact · profound change · profound effect on","e":"The discovery had a profound impact on how scientists understand the brain.","t":"Sıfat"},{"w":"Rational","m":"mantıklı, akılcı","c":"rational decision · rational thinking · rational explanation","e":"In situations of extreme panic, it becomes difficult to think rationally.","t":"Sıfat"},{"w":"Dominant","m":"baskın, hakim","c":"dominant force · dominant culture · dominant role","e":"English has become the dominant language of global business and science.","t":"Sıfat"},{"w":"Instinctive","m":"içgüdüsel, kendiliğinden","c":"instinctive reaction · instinctive behavior · instinctive response","e":"Her instinctive reaction was to protect her family from any perceived threat.","t":"Sıfat"},{"w":"Genuine","m":"gerçek, samimi, hakiki","c":"genuine concern · genuine interest · genuine effort","e":"He showed genuine concern for the welfare of his employees during the crisis.","t":"Sıfat"},{"w":"Cognitive","m":"bilişsel, zihinsel süreçlere ilişkin","c":"cognitive ability · cognitive development · cognitive skills","e":"Cognitive skills such as memory and attention can be improved with practice.","t":"Sıfat"},{"w":"Innate","m":"doğuştan, içgüdüsel","c":"innate ability · innate tendency · innate knowledge","e":"Curiosity appears to be an innate quality in young children across all cultures.","t":"Sıfat"},{"w":"Enduring","m":"kalıcı, uzun ömürlü","c":"enduring impact · enduring legacy · enduring relationship","e":"The painting has had an enduring influence on generations of artists.","t":"Sıfat"},{"w":"Erroneous","m":"yanlış, hatalı","c":"erroneous assumption · erroneous belief · prove erroneous","e":"The report's conclusions were based on an erroneous interpretation of the data.","t":"Sıfat"},{"w":"Substantial","m":"önemli, kayda değer, büyük","c":"substantial evidence · substantial improvement · substantial number of","e":"There has been a substantial increase in the cost of living in recent years.","t":"Sıfat"},{"w":"Arbitrary","m":"rastgele, keyfi","c":"arbitrary decision · arbitrary rules · seem arbitrary","e":"The selection process appeared entirely arbitrary and lacked any clear criteria.","t":"Sıfat"},{"w":"Empirical","m":"deneysel, kanıta dayalı, ampirik","c":"empirical evidence · empirical study · empirical data","e":"Any scientific theory must be supported by solid empirical evidence.","t":"Sıfat"},{"w":"Conducive","m":"elverişli, uygun","c":"conducive to learning · conducive environment · conducive to growth","e":"A quiet, organized environment is highly conducive to effective studying.","t":"Sıfat"},{"w":"Detrimental","m":"zararlı, olumsuz","c":"detrimental effect · detrimental to health · prove detrimental","e":"Excessive screen time can have a detrimental effect on the quality of sleep.","t":"Sıfat"},{"w":"Plausible","m":"makul, inandırıcı","c":"plausible explanation · seem plausible · most plausible theory","e":"The most plausible explanation for the data involves environmental factors.","t":"Sıfat"},{"w":"Intrinsic","m":"özsel, içsel değer taşıyan","c":"intrinsic value · intrinsic motivation · intrinsic worth","e":"Many philosophers argue that animals have intrinsic value beyond their use to humans.","t":"Sıfat"},{"w":"Tangible","m":"somut, elle tutulur","c":"tangible evidence · tangible results · tangible benefits","e":"After months of effort, the team finally began to see tangible results.","t":"Sıfat"},{"w":"Elusive","m":"zor ele geçen, muğlak","c":"elusive goal · remain elusive · an elusive solution","e":"A complete understanding of the human brain remains an elusive scientific goal.","t":"Sıfat"},{"w":"Reciprocal","m":"karşılıklı, mütekabil","c":"reciprocal relationship · reciprocal agreement · reciprocal trust","e":"Their long-term friendship was grounded in reciprocal respect and understanding.","t":"Sıfat"},{"w":"Compatible","m":"uyumlu, bağdaşır","c":"compatible with · mutually compatible · prove compatible","e":"The new policy turned out to be incompatible with existing procedures.","t":"Sıfat"},{"w":"Preliminary","m":"ön, başlangıç niteliğinde","c":"preliminary findings · preliminary research · preliminary stage","e":"The preliminary results are promising, but far more research is still needed.","t":"Sıfat"},{"w":"Negligible","m":"önemsiz, ihmal edilebilir","c":"negligible difference · negligible effect · negligible impact","e":"The difference between the two treatment groups was statistically negligible.","t":"Sıfat"},{"w":"Volatile","m":"değişken, kararsız, oynak","c":"volatile situation · volatile market · highly volatile","e":"The political situation in the region remained highly volatile throughout the year.","t":"Sıfat"},{"w":"Coherent","m":"tutarlı, mantıklı, anlaşılır","c":"coherent argument · coherent strategy · remain coherent","e":"For a theory to be convincing, it must be internally coherent and logically consistent.","t":"Sıfat"},{"w":"Extensive","m":"kapsamlı, geniş, ayrıntılı","c":"extensive research · extensive knowledge · extensive damage","e":"She has extensive experience in international finance and trade policy.","t":"Sıfat"},{"w":"Whereas","m":"oysa, -iken, buna karşın","c":"whereas others prefer... · whereas the data shows... · whereas in contrast...","e":"Some cultures value individual achievement, whereas others prioritize collective harmony.","t":"Bağlaç"},{"w":"Albeit","m":"her ne kadar, -se de","c":"albeit reluctantly · albeit slowly · albeit briefly","e":"She agreed to take on the extra work, albeit reluctantly.","t":"Bağlaç"},{"w":"Consequently","m":"sonuç olarak, bu nedenle","c":"consequently, the results... · and consequently... · consequently affecting...","e":"He failed to prepare for the exam; consequently, his grades suffered.","t":"Bağlaç"},{"w":"Nonetheless","m":"yine de, bununla birlikte","c":"nonetheless, the study... · important nonetheless · nonetheless valid","e":"The results were inconclusive; nonetheless, the research was valuable.","t":"Bağlaç"},{"w":"Thereby","m":"böylece, bu yolla, bu suretle","c":"thereby increasing... · thereby reducing... · thereby achieving...","e":"She delegated tasks effectively, thereby freeing up time for strategic planning.","t":"Bağlaç"},{"w":"Hence","m":"dolayısıyla, bu yüzden","c":"hence the need for... · hence the conclusion... · hence it follows that...","e":"The data was insufficient; hence, no firm conclusions could be drawn.","t":"Bağlaç"},{"w":"Insofar as","m":"-dığı ölçüde, -dığı kadarıyla","c":"insofar as the evidence allows · insofar as we know · insofar as this applies","e":"Insofar as the evidence allows, we can conclude that the treatment is effective.","t":"Bağlaç"},{"w":"In contrast","m":"buna karşın, aksine, oysa","c":"in contrast to · in sharp contrast · in contrast with the findings","e":"The first group improved; in contrast, the second group showed no change.","t":"Bağlaç"},{"w":"Despite","m":"rağmen, -e karşın","c":"despite the difficulties · despite evidence · despite opposition","e":"Despite facing significant obstacles, she completed the project on time.","t":"Bağlaç"},{"w":"Prior to","m":"önceden, -den önce","c":"prior to the study · prior to the experiment · prior to publication","e":"Prior to the experiment, all participants signed a written consent form.","t":"Bağlaç"},{"w":"Regardless of","m":"ne olursa olsun, -den bağımsız olarak","c":"regardless of age · regardless of background · regardless of outcome","e":"The policy applies equally to all employees, regardless of their seniority.","t":"Bağlaç"},{"w":"In lieu of","m":"yerine, -in yerine olarak","c":"in lieu of payment · in lieu of evidence · in lieu of a meeting","e":"She was offered additional days off in lieu of the overtime pay she was owed.","t":"Bağlaç"},{"w":"In turn","m":"buna bağlı olarak, sırayla","c":"which in turn leads to · and in turn affects · in turn influences","e":"Exercise improves mood, which in turn can enhance productivity and focus.","t":"Bağlaç"},{"w":"As opposed to","m":"-in aksine, -den farklı olarak","c":"as opposed to the previous · as opposed to simply · as opposed to more common","e":"The study focused on long-term behavioral change, as opposed to immediate results.","t":"Bağlaç"},{"w":"In addition to","m":"bunun yanı sıra, ek olarak","c":"in addition to this · in addition to their role · in addition to the evidence","e":"In addition to her academic duties, she volunteers at a local community center.","t":"Bağlaç"},{"w":"Given that","m":"-e göre, göz önüne alındığında","c":"given that resources are limited · given that we know · given that the data...","e":"Given that resources are limited, careful prioritization of goals is essential.","t":"Bağlaç"},{"w":"Provided that","m":"koşuluyla ki, şartıyla","c":"provided that conditions are met · provided that it is safe · provided that...","e":"The loan will be granted, provided that the applicant meets all required conditions.","t":"Bağlaç"},{"w":"With regard to","m":"ile ilgili olarak, konusunda","c":"with regard to the findings · with regard to ethics · with regard to your question","e":"With regard to your application, we will be in contact within five working days.","t":"Bağlaç"},{"w":"In light of","m":"ışığında, göz önünde tutarak","c":"in light of the evidence · in light of recent events · in light of these findings","e":"In light of the new evidence, the committee decided to revise its guidelines.","t":"Bağlaç"},{"w":"On the contrary","m":"aksine, tam tersi","c":"on the contrary, results show... · on the contrary, it seems... · quite the contrary","e":"The medication did not worsen her condition; on the contrary, she improved rapidly.","t":"Bağlaç"},{"w":"By virtue of","m":"sayesinde, nedeniyle","c":"by virtue of experience · by virtue of its size · by virtue of the law","e":"By virtue of her extensive experience, she was appointed head of the department.","t":"Bağlaç"},{"w":"In the absence of","m":"yokluğunda, olmadığında","c":"in the absence of evidence · in the absence of guidance · in the absence of data","e":"In the absence of clear evidence, no reliable conclusions can be safely drawn.","t":"Bağlaç"},{"w":"In accordance with","m":"uygun olarak, doğrultusunda","c":"in accordance with guidelines · in accordance with the law · in accordance with findings","e":"The experiment was conducted in strict accordance with ethical guidelines.","t":"Bağlaç"},{"w":"Notwithstanding","m":"rağmen, buna karşın","c":"notwithstanding the evidence · notwithstanding limitations · notwithstanding the risks","e":"Notwithstanding the significant risks, the project was approved by the committee.","t":"Bağlaç"},{"w":"To the extent that","m":"-dığı ölçüde, o kadar ki","c":"to the extent that it affects... · to the extent that we can... · to the extent that data allows...","e":"The findings are valid to the extent that they were obtained under controlled conditions.","t":"Bağlaç"},{"w":"As a result of","m":"sonucunda, -den dolayı","c":"as a result of the study · as a result of exposure · as a result of the change","e":"As a result of chronic financial instability, many families struggle with long-term planning.","t":"Bağlaç"}];
+WORDS.forEach((d,i)=>d.id=i);
+
+/* ===== persist (graceful, works offline on iOS; no-op inside sandbox) ===== */
+const store={
+  get(k,def){try{const v=localStorage.getItem(k);return v==null?def:JSON.parse(v)}catch(e){return def}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+};
+let known = new Set(store.get('known_v1',[]));
+function saveKnown(){store.set('known_v1',[...known])}
+
+/* ===== mistakes (pratik hataları) ===== */
+let mistakes = store.get('mistakes_v1',{});
+function saveMistakes(){store.set('mistakes_v1',mistakes)}
+function recordMistake(d, mode){
+  if(!d) return;
+  const key=d.w.toLocaleLowerCase('tr');
+  const rec=mistakes[key]||{w:d.w,m:d.m,t:d.t||'',count:0};
+  rec.count++; rec.mode=mode; rec.ts=Date.now();
+  rec.w=d.w; rec.m=d.m; rec.t=d.t||'';
+  mistakes[key]=rec;
+  saveMistakes();
+  updateMistakeBadge();
+}
+function mistakeCount(){return Object.keys(mistakes).length}
+function updateMistakeBadge(){
+  const b=$('#mk-tabcount');
+  if(!b) return;
+  const n=mistakeCount();
+  b.textContent=n;
+  b.style.display=n?'':'none';
+}
+
+const $=s=>document.querySelector(s);
+const $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* highlight target word inside example sentence */
+function highlightEx(ex, word){
+  if(!ex) return '';
+  const base = word.split(/[ /]/)[0].replace(/[^A-Za-z]/g,'');
+  if(base.length<3) return esc(ex);
+  const stem = base.length>5?base.slice(0,Math.max(4,base.length-2)):base;
+  try{
+    const re=new RegExp('\\b('+stem+"[a-zA-Z]*)\\b",'gi');
+    return esc(ex).replace(re,'<span class="hl">$1</span>');
+  }catch(e){return esc(ex)}
+}
+
+/* ===== TABS ===== */
+const TITLES={list:'Liste',cards:'Hafıza Kartları',quiz:'Quiz',match:'Eşleştirme',mistakes:'Hatalarım'};
+function showTab(tab){
+  $$('.view').forEach(v=>v.classList.remove('active'));
+  $('#v-'+tab).classList.add('active');
+  $$('nav.tabs button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  $('#bar-sub').textContent=TITLES[tab];
+  if(tab==='cards') renderCard();
+  if(tab==='quiz' && !quizActive) quizSetup();
+  if(tab==='match' && !matchActive) matchSetup();
+  if(tab==='mistakes') renderMistakes();
+  window.scrollTo(0,0);
+}
+$$('nav.tabs button').forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+
+/* ===== LIST + SEARCH ===== */
+const listEl=$('#list'), metaEl=$('#list-meta');
+function renderList(filter=''){
+  const f=filter.trim().toLocaleLowerCase('tr');
+  let arr=WORDS;
+  if(f){
+    arr=WORDS.filter(d=>(d.w+' '+d.m+' '+d.c+' '+d.e+' '+d.t).toLocaleLowerCase('tr').includes(f));
+  }
+  metaEl.textContent = f ? (arr.length+' sonuç') : (WORDS.length+' kelime · alfabetik değil, çalışma sırasında');
+  if(!arr.length){listEl.innerHTML='<div class="empty">Eşleşen kelime yok 🔍<br>Farklı bir terim deneyin.</div>';return}
+  listEl.innerHTML=arr.map(d=>`
+    <div class="wcard" data-id="${d.id}">
+      <div class="txt">
+        <div class="w">${esc(d.w)}${d.t?`<span class="tag">${esc(d.t)}</span>`:''}</div>
+        <div class="m">${esc(d.m)}</div>
+      </div>
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 6l6 6-6 6"/></svg>
+    </div>`).join('');
+  $$('.wcard').forEach(c=>c.onclick=()=>openSheet(+c.dataset.id));
+}
+const qEl=$('#q'), clrEl=$('#clr');
+qEl.addEventListener('input',()=>{clrEl.classList.toggle('show',qEl.value.length>0);renderList(qEl.value)});
+clrEl.onclick=()=>{qEl.value='';clrEl.classList.remove('show');renderList('');qEl.focus()};
+
+/* ===== DETAIL SHEET ===== */
+function openSheet(id){
+  const d=WORDS[id];
+  $('#d-word').textContent=d.w;
+  $('#d-mean').textContent=d.m;
+  $('#d-coll-f').style.display=d.c?'':'none';
+  $('#d-coll').textContent=d.c;
+  $('#d-theme-f').style.display=d.t?'':'none';
+  $('#d-theme').textContent=d.t;
+  $('#d-ex').innerHTML=highlightEx(d.e,d.w);
+  $('#sheet-bg').classList.add('open');
+  $('#sheet').classList.add('open');
+}
+function closeSheet(){$('#sheet-bg').classList.remove('open');$('#sheet').classList.remove('open')}
+$('#sheet-bg').onclick=closeSheet;
+let sy=0;
+$('#sheet').addEventListener('touchstart',e=>sy=e.touches[0].clientY,{passive:true});
+$('#sheet').addEventListener('touchmove',e=>{const dy=e.touches[0].clientY-sy;if(dy>0&&$('#sheet').scrollTop<=0)$('#sheet').style.transform='translateY('+dy+'px)'},{passive:true});
+$('#sheet').addEventListener('touchend',e=>{const dy=e.changedTouches[0].clientY-sy;$('#sheet').style.transform='';if(dy>110)closeSheet()});
+
+/* ===== FLASHCARDS ===== */
+let fcOrder=[...WORDS.keys()], fcIdx=0, fcOnlyUnknown=false;
+function fcDeck(){return fcOnlyUnknown?fcOrder.filter(i=>!known.has(WORDS[i].id)):fcOrder}
+function renderCard(){
+  const deck=fcDeck();
+  if(!deck.length){
+    $('#fc-word').textContent='Hepsi bitti! 🎉';
+    $('#fc-num').textContent='0 / 0';$('#fc-prog').style.width='100%';return;
+  }
+  if(fcIdx>=deck.length)fcIdx=0;
+  const d=WORDS[deck[fcIdx]];
+  $('#card').classList.remove('flipped');
+  setTimeout(()=>{
+    $('#fc-word').textContent=d.w;
+    $('#fc-bword').textContent=d.w;
+    $('#fc-bmean').textContent=d.m;
+    $('#fc-bcoll-w').style.display=d.c?'':'none';
+    $('#fc-bcoll').textContent=d.c;
+    $('#fc-bex').innerHTML=highlightEx(d.e,d.w);
+    $('#fc-knownbadge').textContent=known.has(d.id)?'✓ biliniyor':'';
+  },$('#card').classList.contains('flipped')?260:0);
+  $('#fc-num').textContent=(fcIdx+1)+' / '+deck.length;
+  $('#fc-prog').style.width=((fcIdx+1)/deck.length*100)+'%';
+  const isK=known.has(d.id);
+  const kb=$('#fc-know');kb.classList.toggle('known',isK);kb.textContent=isK?'✓ Biliniyor':'Biliyorum';
+}
+$('#card').onclick=()=>$('#card').classList.toggle('flipped');
+$('#fc-next').onclick=()=>{fcIdx++;renderCard()};
+$('#fc-prev').onclick=()=>{fcIdx=Math.max(0,fcIdx-1);renderCard()};
+$('#fc-know').onclick=e=>{e.stopPropagation();const deck=fcDeck();if(!deck.length)return;const d=WORDS[deck[fcIdx]];if(known.has(d.id))known.delete(d.id);else known.add(d.id);saveKnown();renderCard()};
+$('#fc-shuffle').onclick=()=>{for(let i=fcOrder.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[fcOrder[i],fcOrder[j]]=[fcOrder[j],fcOrder[i]]}fcIdx=0;renderCard()};
+$('#fc-onlyunknown').onclick=function(){fcOnlyUnknown=!fcOnlyUnknown;this.classList.toggle('on',fcOnlyUnknown);fcIdx=0;renderCard()};
+$('#fc-reset').onclick=()=>{if(confirm('Tüm "biliniyor" işaretlerini sıfırla?')){known.clear();saveKnown();renderCard()}};
+// swipe
+let cx=0;
+$('#card').addEventListener('touchstart',e=>cx=e.touches[0].clientX,{passive:true});
+$('#card').addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-cx;if(Math.abs(dx)>60){if(dx<0)$('#fc-next').click();else $('#fc-prev').click()}});
+
+/* ===== QUIZ ===== */
+let quizActive=false,quizDir='en2tr',quizQs=[],quizI=0,quizScore=0,quizLen=10;
+const qroot=$('#quiz-root');
+function quizSetup(){
+  quizActive=false;
+  qroot.innerHTML=`
+    <div class="q-setup">
+      <div class="q-head">Quiz'e hazır mısın?</div>
+      <div class="q-sub">${WORDS.length} kelimeden rastgele çoktan seçmeli sorular. Yön ve uzunluk seç, başla.</div>
+      <div class="seg" id="q-dir">
+        <button data-d="en2tr" class="on">İng → Türkçe</button>
+        <button data-d="tr2en">Türkçe → İng</button>
+      </div>
+      <div class="seg" id="q-len">
+        <button data-n="10" class="on">10 soru</button>
+        <button data-n="20">20 soru</button>
+        <button data-n="9999">Tümü</button>
+      </div>
+      <button class="big-btn" id="q-start">Başla</button>
+    </div>`;
+  $('#q-dir').querySelectorAll('button').forEach(b=>b.onclick=()=>{$('#q-dir').querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');quizDir=b.dataset.d});
+  $('#q-len').querySelectorAll('button').forEach(b=>b.onclick=()=>{$('#q-len').querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');quizLen=+b.dataset.n});
+  $('#q-start').onclick=quizStart;
+}
+function shuffled(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function quizStart(){
+  quizActive=true;quizI=0;quizScore=0;
+  const pool=shuffled([...WORDS.keys()]);
+  quizQs=pool.slice(0,Math.min(quizLen,pool.length));
+  renderQ();
+}
+function renderQ(){
+  if(quizI>=quizQs.length)return quizDone();
+  const d=WORDS[quizQs[quizI]];
+  const ask = quizDir==='en2tr'?d.w:d.m;
+  const correct = quizDir==='en2tr'?d.m:d.w;
+  // build 3 distractors (unique text)
+  const others=shuffled([...WORDS.keys()].filter(i=>i!==d.id));
+  const opts=[correct];const seen=new Set([correct.toLowerCase()]);
+  for(const i of others){const t=quizDir==='en2tr'?WORDS[i].m:WORDS[i].w;if(!seen.has(t.toLowerCase())){seen.add(t.toLowerCase());opts.push(t)}if(opts.length>=4)break}
+  const shOpts=shuffled(opts);
+  qroot.innerHTML=`
+    <div class="q-top"><span class="q-count">Soru ${quizI+1} / ${quizQs.length}</span><span class="q-score">${quizScore} doğru</span></div>
+    <div class="q-prog"><i style="width:${quizI/quizQs.length*100}%"></i></div>
+    <div class="q-prompt">${quizDir==='en2tr'?'Türkçe anlamı?':'İngilizce karşılığı?'}</div>
+    <div class="q-word">${esc(ask)}</div>
+    <div class="q-opts" id="q-opts">
+      ${shOpts.map(o=>`<button class="q-opt" data-o="${esc(o)}">${esc(o)}</button>`).join('')}
+    </div>`;
+  $$('#q-opts .q-opt').forEach(b=>b.onclick=()=>answerQ(b,correct,d));
+}
+function answerQ(btn,correct,d){
+  const ok=btn.dataset.o===correct;
+  if(ok){quizScore++;btn.classList.add('correct')}
+  else{btn.classList.add('wrong');recordMistake(d,'Quiz')}
+  $$('#q-opts .q-opt').forEach(b=>{
+    b.style.pointerEvents='none';
+    if(b.dataset.o===correct)b.classList.add('correct');
+    else if(b!==btn)b.classList.add('dim');
+  });
+  $('.q-score').textContent=quizScore+' doğru';
+  const nx=document.createElement('button');
+  nx.className='big-btn q-next';nx.textContent=(quizI+1>=quizQs.length)?'Sonuçları gör':'Sonraki soru →';
+  nx.onclick=()=>{quizI++;renderQ()};
+  qroot.appendChild(nx);
+}
+function quizDone(){
+  const pct=Math.round(quizScore/quizQs.length*100);
+  let msg=pct>=90?'Müthiş! 🌟':pct>=70?'Çok iyi gidiyorsun 👏':pct>=50?'Fena değil, devam 💪':'Tekrar çalışmaya değer 📚';
+  qroot.innerHTML=`
+    <div class="q-done">
+      <div class="scorebig">${quizScore}/${quizQs.length}</div>
+      <div class="scoremsg">%${pct} · ${msg}</div>
+      <button class="big-btn" id="q-again">Yeni quiz</button>
+      <button class="big-btn ghost" id="q-menu" style="margin-top:10px">Ayarlara dön</button>
+    </div>`;
+  burst();
+  $('#q-again').onclick=quizStart;
+  $('#q-menu').onclick=quizSetup;
+}
+
+/* ===== MATCH ===== */
+let matchActive=false,matchSel=null,matchPairs=6,matchMoves=0,matchDone=0,matchTotal=0;
+const mroot=$('#match-root');
+function matchSetup(){
+  matchActive=false;
+  mroot.innerHTML=`
+    <div class="m-setup">
+      <div class="q-head">Kelime Eşleştirme</div>
+      <div class="q-sub">İngilizce kelimeleri Türkçe anlamlarıyla eşleştir. Soldan bir kelimeye, sağdan anlamına dokun.</div>
+      <div class="seg" id="m-n">
+        <button data-n="5" class="on">5 çift</button>
+        <button data-n="6">6 çift</button>
+        <button data-n="8">8 çift</button>
+      </div>
+      <button class="big-btn" id="m-start">Başla</button>
+    </div>`;
+  $('#m-n').querySelectorAll('button').forEach(b=>b.onclick=()=>{$('#m-n').querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on');matchPairs=+b.dataset.n});
+  $('#m-start').onclick=matchStart;
+}
+function matchStart(){
+  matchActive=true;matchSel=null;matchMoves=0;matchDone=0;matchTotal=matchPairs;
+  const picks=shuffled([...WORDS.keys()]).slice(0,matchPairs);
+  const left=picks.map(i=>({id:i,txt:WORDS[i].w}));
+  const right=shuffled(picks.map(i=>({id:i,txt:WORDS[i].m})));
+  mroot.innerHTML=`
+    <div class="m-stat"><span id="m-progress">0 / ${matchPairs} eşleşti</span><span id="m-moves">0 hamle</span></div>
+    <div class="m-cols">
+      <div class="m-col">${left.map(o=>`<button class="m-item en" data-side="L" data-id="${o.id}">${esc(o.txt)}</button>`).join('')}</div>
+      <div class="m-col">${right.map(o=>`<button class="m-item" data-side="R" data-id="${o.id}">${esc(o.txt)}</button>`).join('')}</div>
+    </div>`;
+  $$('.m-item').forEach(it=>it.onclick=()=>matchTap(it));
+}
+function matchTap(it){
+  if(it.classList.contains('done'))return;
+  if(!matchSel){
+    if(it.classList.contains('sel')){it.classList.remove('sel');matchSel=null;return}
+    $$('.m-item.sel').forEach(x=>x.classList.remove('sel'));
+    it.classList.add('sel');matchSel=it;return;
+  }
+  if(it===matchSel){it.classList.remove('sel');matchSel=null;return}
+  if(it.dataset.side===matchSel.dataset.side){ // switch selection on same side
+    matchSel.classList.remove('sel');it.classList.add('sel');matchSel=it;return;
+  }
+  matchMoves++;$('#m-moves').textContent=matchMoves+' hamle';
+  if(it.dataset.id===matchSel.dataset.id){
+    it.classList.add('done');matchSel.classList.add('done');matchSel=null;
+    matchDone++;$('#m-progress').textContent=matchDone+' / '+matchTotal+' eşleşti';
+    if(matchDone===matchTotal)matchWin();
+  }else{
+    const a=it,b=matchSel;a.classList.add('bad');b.classList.add('bad');
+    recordMistake(WORDS[+a.dataset.id],'Eşleştirme');
+    matchSel=null;
+    setTimeout(()=>{a.classList.remove('bad','sel');b.classList.remove('bad','sel')},420);
+  }
+}
+function matchWin(){
+  burst();
+  setTimeout(()=>{
+    mroot.innerHTML=`
+      <div class="q-done">
+        <div class="scorebig">🎯</div>
+        <div class="scoremsg">${matchTotal} çiftin hepsini ${matchMoves} hamlede eşleştirdin!</div>
+        <button class="big-btn" id="m-again">Tekrar oyna</button>
+        <button class="big-btn ghost" id="m-menu" style="margin-top:10px">Ayarlara dön</button>
+      </div>`;
+    $('#m-again').onclick=matchStart;
+    $('#m-menu').onclick=matchSetup;
+  },500);
+}
+
+/* ===== MISTAKES (Hatalarım) ===== */
+const mkroot=$('#mistakes-root');
+function timeAgo(ts){
+  if(!ts) return '';
+  const s=Math.floor((Date.now()-ts)/1000);
+  if(s<60) return 'az önce';
+  const m=Math.floor(s/60); if(m<60) return m+' dk önce';
+  const h=Math.floor(m/60); if(h<24) return h+' saat önce';
+  const dd=Math.floor(h/24); if(dd<7) return dd+' gün önce';
+  return Math.floor(dd/7)+' hafta önce';
+}
+function renderMistakes(){
+  const arr=Object.values(mistakes).sort((a,b)=>(b.count-a.count)||((b.ts||0)-(a.ts||0)));
+  const total=arr.reduce((s,r)=>s+r.count,0);
+  if(!arr.length){
+    mkroot.innerHTML='<div class="empty">Henüz hata yok 🎉<br>Quiz veya Eşleştirme\'de yanlış yaptığın kelimeler burada birikecek.</div>';
+    return;
+  }
+  mkroot.innerHTML=`
+    <div class="mk-head">
+      <div class="t">Zorlandığın kelimeler<small>${arr.length} kelime · toplam ${total} hata</small></div>
+      <button class="mk-clear" id="mk-clear">Temizle</button>
+    </div>
+    ${arr.map(r=>`
+      <div class="wcard" data-w="${esc(r.w.toLocaleLowerCase('tr'))}">
+        <div class="txt">
+          <div class="w">${esc(r.w)}${r.t?`<span class="tag">${esc(r.t)}</span>`:''}</div>
+          <div class="m">${esc(r.m)}</div>
+          <span class="mk-mode">${esc(r.mode||'Pratik')}${r.ts?' · '+timeAgo(r.ts):''}</span>
+        </div>
+        <div class="mk-badge">×${r.count}</div>
+      </div>`).join('')}`;
+  $$('#mistakes-root .wcard').forEach(c=>c.onclick=()=>{
+    const key=c.dataset.w;
+    const idx=WORDS.findIndex(d=>d.w.toLocaleLowerCase('tr')===key);
+    if(idx>=0) openSheet(idx);
+  });
+  $('#mk-clear').onclick=()=>{
+    if(confirm('Tüm hata kayıtların silinsin mi?')){mistakes={};saveMistakes();updateMistakeBadge();renderMistakes()}
+  };
+}
+
+/* ===== confetti ===== */
+function burst(){
+  const c=document.createElement('div');c.className='confetti';document.body.appendChild(c);
+  const cols=['#D55B36','#2E7D6F','#C99A2E','#3F8F5B'];
+  for(let i=0;i<60;i++){
+    const p=document.createElement('div');
+    const s=6+Math.random()*7;
+    p.style.cssText=`position:absolute;top:-20px;left:${Math.random()*100}%;width:${s}px;height:${s*0.5}px;background:${cols[i%4]};border-radius:2px;opacity:.95;transform:rotate(${Math.random()*360}deg)`;
+    c.appendChild(p);
+    const dur=1200+Math.random()*1200;
+    p.animate([{transform:`translateY(0) rotate(0)`,opacity:1},{transform:`translateY(${window.innerHeight+60}px) rotate(${Math.random()*720}deg)`,opacity:.9}],{duration:dur,easing:'cubic-bezier(.3,.6,.5,1)'});
+    setTimeout(()=>p.remove(),dur);
+  }
+  setTimeout(()=>c.remove(),2600);
+}
+
+/* ===== init ===== */
+$('#bar-count').textContent=WORDS.length+' kelime';
+renderList('');
+renderCard();
+updateMistakeBadge();
+</script>
+</body>
+</html>
